@@ -5,4 +5,4 @@ mod tests;
 
 #[derive(Parser)]
 #[grammar = "../mrasm.pest"]
-struct AsmParser;
+pub struct AsmParser;

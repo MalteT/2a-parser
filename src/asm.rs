@@ -1,7 +1,7 @@
 
 /// The different stack sizes the Stack may have.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-enum Stacksize {
+pub enum Stacksize {
     /// 16 byte stack.
     Size16,
     /// 32 byte stack.
@@ -16,7 +16,7 @@ enum Stacksize {
 
 /// Possible register values.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-enum Register {
+pub enum Register {
     /// Register 0.
     R0,
     /// Register 1.
@@ -29,7 +29,7 @@ enum Register {
 
 /// Possible instructions for the assembler.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-enum Instruction {
+pub enum Instruction {
     ///
     EmptyLine,
 }
