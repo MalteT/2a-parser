@@ -1,0 +1,43 @@
+
+eol         = _{ NEWLINE }
+colon       = _{ ":" }
+semicolon   = _{ ";" }
+ws          = _{ (" " | "\t")+ }
+
+number_bin  = ${ "0b" ~ ASCII_BIN_DIGIT+ }
+number_hex  = ${ "0x" ~ ASCII_HEX_DIGIT+ }
+number_dec  = ${ ASCII_DIGIT+ }
+number      = ${ number_bin | number_hex | number_dec }
+label       = @{ !( "R" | "PC" | "SP" ) ~ ASCII_ALPHANUMERIC+ }
+rest        = @{ ( !eol ~ ANY )* }
+stacksize   = @{ "16" | "32" | "48" | "64" | ^"NOSET" }
+register    = @{ ^"R" ~ '0'..'3' }
+
+comment     = ${ semicolon ~ rest }
+target      = ${ label ~ colon }
+header      = _{ "#! mrasm" ~ (eol | EOI) }
+
+asm_org     = ${ ^".ORG"        ~ ws ~ number    }
+asm_byte    = ${ ^".BYTE"       ~ ws ~ number    }
+asm_db      = ${ ^".DB"         ~ ws ~ number    ~ ( ws* ~ "," ~ ws* ~ number )* }
+asm_dw      = ${ ^".DW"         ~ ws ~ number    ~ ( ws* ~ "," ~ ws* ~ number )* }
+asm_equ     = ${ ^".EQU"        ~ ws ~ label     ~ ws  ~ number }
+asm_stack   = ${ ^"*STACKSIZE"  ~ ws ~ stacksize }
+
+ins_inc     = ${ ^"INC"         ~ ws ~ register  }
+
+instruction =  {
+    asm_org     |
+    asm_byte    |
+    asm_db      |
+    asm_dw      |
+    asm_equ     |
+    asm_stack   |
+    ins_inc
+}
+
+line        =  { (target | instruction)? ~ comment? }
+
+file        =  { SOI ~ header ~ (line ~ eol)* ~ line ~ EOI }
+
+WHITESPACE  = _{ " " | "\t" }

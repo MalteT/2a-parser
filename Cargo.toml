@@ -1,0 +1,9 @@
+[package]
+name = "asm_parser"
+version = "0.1.0"
+authors = ["Malte Tammena <malte.tammena@gmx.de>"]
+edition = "2018"
+
+[dependencies]
+pest = "2.1"
+pest_derive = "2.1"
