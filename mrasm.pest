@@ -12,6 +12,7 @@ label       = @{ !( "R" | "PC" | "SP" ) ~ ASCII_ALPHANUMERIC+ }
 rest        = @{ ( !eol ~ ANY )* }
 stacksize   = @{ "16" | "32" | "48" | "64" | ^"NOSET" }
 register    = @{ ^"R" ~ '0'..'3' }
+address     = ${ "(" ~ (label | number) ~ ")" }
 
 comment     = ${ semicolon ~ rest }
 target      = ${ label ~ colon }
@@ -24,7 +25,10 @@ asm_dw      = ${ ^".DW"         ~ ws ~ number    ~ ( ws* ~ "," ~ ws* ~ number )*
 asm_equ     = ${ ^".EQU"        ~ ws ~ label     ~ ws  ~ number }
 asm_stack   = ${ ^"*STACKSIZE"  ~ ws ~ stacksize }
 
+ins_clr     = ${ ^"CLR"         ~ ws ~ register  }
 ins_inc     = ${ ^"INC"         ~ ws ~ register  }
+ins_st      = ${ ^"ST"          ~ ws ~ address   ~ ws  ~ "," ~ ws ~ register }
+ins_jr      = ${ ^"JR"          ~ ws ~ label     }
 
 instruction =  {
     asm_org     |

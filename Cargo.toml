@@ -5,5 +5,6 @@ authors = ["Malte Tammena <malte.tammena@gmx.de>"]
 edition = "2018"
 
 [dependencies]
+either = "1.5"
 pest = "2.1"
 pest_derive = "2.1"
