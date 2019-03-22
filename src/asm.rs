@@ -1,16 +1,23 @@
 use either::Either;
+use std::ops::{Deref, DerefMut};
 
 type Line = Either<Instruction, Label>;
 type Comment = String;
 type Label = String;
-type Address = u8;
-type Byte = u8;
-type Word = u16;
+type Address = Byte;
 
 mod display;
 
+/// A single byte.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+pub struct Byte(u8);
+
+/// A single word.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+pub struct Word(u16);
+
 /// The different stack sizes the Stack may have.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Stacksize {
     /// 16 byte stack.
     Size16,
@@ -25,7 +32,7 @@ pub enum Stacksize {
 }
 
 /// Possible register values.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Register {
     /// Register 0.
     R0,
@@ -75,4 +82,54 @@ pub enum Instruction {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Asm {
     pub lines: Vec<(Line, Comment)>,
+}
+
+impl Deref for Byte {
+    type Target = u8;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Byte {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<u8> for Byte {
+    fn from(byte: u8) -> Self {
+        Byte(byte)
+    }
+}
+
+impl From<Byte> for u8 {
+    fn from(byte: Byte) -> u8 {
+        byte.0
+    }
+}
+
+impl Deref for Word {
+    type Target = u16;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Word {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<u16> for Word {
+    fn from(word: u16) -> Self {
+        Word(word)
+    }
+}
+
+impl From<Word> for u16 {
+    fn from(word: Word) -> u16 {
+        word.0
+    }
 }
