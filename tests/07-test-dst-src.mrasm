@@ -2,7 +2,12 @@
 
 ADDR:
     .DB 42
+INCEPTION:
     .DB ADDR
+    .DB (ADDR)
+    .DB ((INCEPTION))
+    .DB (((01)))
+
     LD R0, ADDR
 
 LOOP:
