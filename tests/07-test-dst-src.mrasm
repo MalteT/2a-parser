@@ -4,9 +4,9 @@ ADDR:
     .DB 42
 INCEPTION:
     .DB ADDR
-    .DB (ADDR)
-    ; .DB ((INCEPTION))     ; does not work
-    ; .DB (((01)))          ; does not work
+    ; .DB (ADDR)            ; does not work  (nur konstante erlaubt)
+    ; .DB ((INCEPTION))     ; does not work  ( ((..)) nur mit reg)
+    ; .DB (((01)))          ; does not work  ( ((..)) nur mit reg)
 
     LD R0, ADDR
 
