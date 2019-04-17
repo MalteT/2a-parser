@@ -1,8 +1,8 @@
 #!mrasm
 
 ADDR:
-    .BYTE 42
-    .BYTE ADDR
+    .DB 42
+    .DB ADDR
     LD R0, ADDR
 
 LOOP:
