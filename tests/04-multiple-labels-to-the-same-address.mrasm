@@ -1,8 +1,8 @@
 #!mrasm
 
 FIRST_LINE:
-    LD R0, 42
 LOOP:
+    LD R0, 42
     INC R0
-    JZ LOOP
+    JZS LOOP
     JR FIRST_LINE

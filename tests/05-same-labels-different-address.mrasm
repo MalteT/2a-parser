@@ -4,5 +4,7 @@ LOOP:
     LD R0, 42
 LOOP:
     INC R0
-    JZ LOOP
+    JZC LOOP
     JR FIRST_LINE
+
+; Did not work

@@ -13,7 +13,7 @@ LOOP:
     DEC ((R0+))
     DEC 0xFF
     DEC (0xFF)
-LOOP:
+DOOP:
     INC R0
-    JZ LOOP
-    JR FIRST_LINE
+    JZS LOOP
+    JR LOOP

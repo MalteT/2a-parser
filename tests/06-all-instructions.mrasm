@@ -32,7 +32,7 @@ LOOP:
     MOV R0, R1
     LD R0, 42
     LD R0, (0)
-    ST R0, (0xFF)
+    ST (0xFF), R0
     LDSP 0x40
     PUSH R0
     POP R0
