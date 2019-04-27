@@ -20,7 +20,13 @@ pub struct AsmParser;
 ///
 /// # Example
 ///
-/// ```
+/// ```no_run
+/// let (_, label, _, constant) = inner_tuple! { equ;
+///     ws          => ignore;
+///     raw_label   => parse_raw_label;
+///     ws          => ignore;
+///     constant    => parse_byte;
+/// };
 /// ```
 macro_rules! inner_tuple {
     ($rule:expr;
@@ -74,8 +80,8 @@ impl AsmParser {
     /// - `input`: The [`str`] to parse.
     ///
     /// # Returns
-    /// - The parsed [`assembler program`](Asm) or a [`ParserError`] or
-    /// - a [`ParseError`]
+    /// - The parsed [`assembler program`](Asm) or
+    /// - a [`ParserError`]
     pub fn parse(input: &str) -> ParseResult<Asm> {
         let mut lines = vec![];
         let parsed = <Self as Parser<Rule>>::parse(Rule::file, input)?;
