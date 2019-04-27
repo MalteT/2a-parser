@@ -1,46 +1,35 @@
 use super::AsmParser;
-use pest::Parser;
 use super::Rule;
+use pest::Parser;
 
 macro_rules! parse {
     ($rule:expr, $val:expr) => {
-        let res = AsmParser::parse($rule, $val);
-        let s = format!("{} did not parse {}.",
-                        stringify!($rule), stringify!($val));
+        let res = <AsmParser as Parser<Rule>>::parse($rule, $val);
+        let s = format!("{} did not parse {}.", stringify!($rule), stringify!($val));
         match res {
             Ok(_) => (),
-            Err(_) => panic!("{}\n{:#?}", s, res),
+            Err(e) => panic!("{}\n{}", s, e),
         }
     };
     ($rule:expr, $val:expr, $expected:expr) => {
-        let res = AsmParser::parse($rule, $val);
-        let s = format!("{} did not parse {}.",
-                        stringify!($rule), stringify!($val));
+        let res = <AsmParser as Parser<Rule>>::parse($rule, $val);
+        let s = format!("{} did not parse {}.", stringify!($rule), stringify!($val));
         match res {
             Ok(ref r) => assert_eq!(r.as_str(), $expected),
-            Err(_) => panic!("{}\n{:#?}", s, res),
+            Err(e) => panic!("{}\n{}", s, e),
         }
-    }
+    };
 }
 
 macro_rules! parse_err {
     ($rule:expr, $val:expr) => {
-        let res = AsmParser::parse($rule, $val);
-        let s = format!("{} parsed {}.",
-                        stringify!($rule), stringify!($val));
+        let res = <AsmParser as Parser<Rule>>::parse($rule, $val);
+        let s = format!("{} parsed {}.", stringify!($rule), stringify!($val));
         match res {
             Err(_) => (),
             Ok(_) => panic!("{}\n{:#?}", s, res),
         }
-    }
-}
-
-#[test]
-fn test_whitespace() {
-    use Rule::WHITESPACE;
-    parse!(WHITESPACE, " ");
-    parse!(WHITESPACE, "\t");
-    parse_err!(WHITESPACE, "whitespace");
+    };
 }
 
 #[test]
@@ -76,65 +65,65 @@ fn test_ws() {
 }
 
 #[test]
-fn test_number_bin() {
-    use Rule::number_bin;
-    parse!(number_bin, "0b10010");
-    parse!(number_bin, "0b0");
-    parse!(number_bin, "0b11111111");
-    parse!(number_bin, "0b100000000");
-    parse_err!(number_bin, "0x10");
-    parse_err!(number_bin, "10");
-    parse_err!(number_bin, "0b2");
+fn test_constant_bin() {
+    use Rule::constant_bin;
+    parse!(constant_bin, "0b10010");
+    parse!(constant_bin, "0b0");
+    parse!(constant_bin, "0b11111111");
+    parse!(constant_bin, "0b100000000");
+    parse_err!(constant_bin, "0x10");
+    parse_err!(constant_bin, "10");
+    parse_err!(constant_bin, "0b2");
 }
 
 #[test]
-fn test_number_hex() {
-    use Rule::number_hex;
-    parse!(number_hex, "0xFF");
-    parse!(number_hex, "0xf0");
-    parse!(number_hex, "0x0");
-    parse!(number_hex, "0x123456789");
-    parse!(number_hex, "0xabcdef");
-    parse!(number_hex, "0xffg", "0xff");
-    parse_err!(number_hex, "ff");
-    parse_err!(number_hex, "10");
-    parse_err!(number_hex, "0bff");
+fn test_constant_hex() {
+    use Rule::constant_hex;
+    parse!(constant_hex, "0xFF");
+    parse!(constant_hex, "0xf0");
+    parse!(constant_hex, "0x0");
+    parse!(constant_hex, "0x123456789");
+    parse!(constant_hex, "0xabcdef");
+    parse!(constant_hex, "0xffg", "0xff");
+    parse_err!(constant_hex, "ff");
+    parse_err!(constant_hex, "10");
+    parse_err!(constant_hex, "0bff");
 }
 
 #[test]
-fn test_number_dec() {
-    use Rule::number_dec;
-    parse!(number_dec, "0");
-    parse!(number_dec, "10");
-    parse!(number_dec, "0123456789");
-    parse!(number_dec, "01a1", "01");
-    parse!(number_dec, "0123456789a", "0123456789");
-    parse!(number_dec, "0xff", "0");
-    parse!(number_dec, "0b10", "0");
-    parse_err!(number_dec, "");
+fn test_constant_dec() {
+    use Rule::constant_dec;
+    parse!(constant_dec, "0");
+    parse!(constant_dec, "10");
+    parse!(constant_dec, "0123456789");
+    parse!(constant_dec, "01a1", "01");
+    parse!(constant_dec, "0123456789a", "0123456789");
+    parse!(constant_dec, "0xff", "0");
+    parse!(constant_dec, "0b10", "0");
+    parse_err!(constant_dec, "");
 }
 
 #[test]
-fn test_number() {
-    use Rule::number;
-    parse!(number, "0");
-    parse!(number, "0b0");
-    parse!(number, "0x0");
-    parse!(number, "0b10");
-    parse!(number, "0x10");
-    parse!(number, "010");
+fn test_constant() {
+    use Rule::constant;
+    parse!(constant, "0");
+    parse!(constant, "0b0");
+    parse!(constant, "0x0");
+    parse!(constant, "0b10");
+    parse!(constant, "0x10");
+    parse!(constant, "010");
 }
 
 #[test]
-fn test_label() {
-    use Rule::label;
-    parse!(label, "abcdefghijklmnopqrstuvwxyz");
-    parse!(label, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    parse!(label, "0123456789");
-    parse!(label, "abc0123456789def");
-    parse_err!(label, "RLDK0JF");
-    parse_err!(label, "PCLD0KJF");
-    parse_err!(label, "SPLD0KJF");
+fn test_raw_label() {
+    use Rule::raw_label;
+    parse!(raw_label, "abcdefghijklmnopqrstuvwxyz");
+    parse!(raw_label, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    parse!(raw_label, "0123456789");
+    parse!(raw_label, "abc0123456789def");
+    parse_err!(raw_label, "RLDK0JF");
+    parse_err!(raw_label, "PCLD0KJF");
+    parse_err!(raw_label, "SPLD0KJF");
 }
 
 #[test]
@@ -149,17 +138,17 @@ fn test_rest() {
 
 #[test]
 fn test_stacksize() {
-    use Rule::stacksize;
-    parse!(stacksize, "16");
-    parse!(stacksize, "32");
-    parse!(stacksize, "48");
-    parse!(stacksize, "64");
-    parse!(stacksize, "noset");
-    parse!(stacksize, "nOSet");
-    parse!(stacksize, "NOSET");
-    parse_err!(stacksize, "17");
-    parse_err!(stacksize, "128");
-    parse_err!(stacksize, "set");
+    use Rule::raw_stacksize;
+    parse!(raw_stacksize, "16");
+    parse!(raw_stacksize, "32");
+    parse!(raw_stacksize, "48");
+    parse!(raw_stacksize, "64");
+    parse!(raw_stacksize, "noset");
+    parse!(raw_stacksize, "nOSet");
+    parse!(raw_stacksize, "NOSET");
+    parse_err!(raw_stacksize, "17");
+    parse_err!(raw_stacksize, "128");
+    parse_err!(raw_stacksize, "set");
 }
 
 #[test]
@@ -190,11 +179,11 @@ fn test_comment() {
 }
 
 #[test]
-fn test_target() {
-    use Rule::target;
-    parse!(target, "label:", "label:");
-    parse_err!(target, "label :");
-    parse_err!(target, "label\n:");
+fn test_label() {
+    use Rule::label;
+    parse!(label, "label:", "label:");
+    parse_err!(label, "label :");
+    parse_err!(label, "label\n:");
 }
 
 #[test]
@@ -208,72 +197,72 @@ fn test_header() {
 }
 
 #[test]
-fn test_asm_org() {
-    use Rule::asm_org;
-    parse!(asm_org, ".ORG 16");
-    parse!(asm_org, ".org 0x16");
-    parse!(asm_org, ".ORG\t0b100");
-    parse!(asm_org, ".org 16\n", ".org 16");
-    parse_err!(asm_org, ".org20");
+fn test_org() {
+    use Rule::org;
+    parse!(org, ".ORG 16");
+    parse!(org, ".org 0x16");
+    parse!(org, ".ORG\t0b100");
+    parse!(org, ".org 16\n", ".org 16");
+    parse_err!(org, ".org20");
 }
 
 #[test]
-fn test_asm_byte() {
-    use Rule::asm_byte;
-    parse!(asm_byte, ".BYTE 222");
-    parse!(asm_byte, ".byTe\t0xff");
-    parse!(asm_byte, ".bYte\t 0b1011");
-    parse!(asm_byte, ".byte\t 0b1011");
-    parse_err!(asm_byte, ".byte22");
+fn test_byte() {
+    use Rule::byte;
+    parse!(byte, ".BYTE 222");
+    parse!(byte, ".byTe\t0xff");
+    parse!(byte, ".bYte\t 0b1011");
+    parse!(byte, ".byte\t 0b1011");
+    parse_err!(byte, ".byte22");
 }
 
 #[test]
-fn test_asm_db() {
-    use Rule::asm_db;
-    parse!(asm_db, ".DB 20, 0xff, 0b11110");
-    parse!(asm_db, ".db 100\t,0xf\t ,\t\t0b1");
-    parse!(asm_db, ".db 100\t0xf\t ,\t\t0b1", ".db 100");
+fn test_db() {
+    use Rule::db;
+    parse!(db, ".DB 20, 0xff, 0b11110");
+    parse!(db, ".db 100\t,0xf\t ,\t\t0b1");
+    parse!(db, ".db 100\t0xf\t ,\t\t0b1", ".db 100");
 }
 
 #[test]
-fn test_asm_dw() {
-    use Rule::asm_dw;
-    parse!(asm_dw, ".DW 20, 0xff, 0b11110");
-    parse!(asm_dw, ".dw 100\t,0xf\t ,\t\t0b1");
-    parse!(asm_dw, ".dW 100\t0xf\t ,\t\t0b1", ".dW 100");
+fn test_dw() {
+    use Rule::dw;
+    parse!(dw, ".DW 20, 0xff, 0b11110");
+    parse!(dw, ".dw 100\t,0xf\t ,\t\t0b1");
+    parse!(dw, ".dW 100\t0xf\t ,\t\t0b1", ".dW 100");
 }
 
 #[test]
-fn test_asm_equ() {
-    use Rule::asm_equ;
-    parse!(asm_equ, ".EQU label 0xf");
-    parse!(asm_equ, ".equ rest 10");
-    parse_err!(asm_equ, ".eq rest 10");
-    parse_err!(asm_equ, ".equ rest, 20");
-    parse_err!(asm_equ, ".equ rest, 0xff");
-    parse_err!(asm_equ, ".equ 0xff");
-    parse_err!(asm_equ, ".equ label");
+fn test_equ() {
+    use Rule::equ;
+    parse!(equ, ".EQU label 0xf");
+    parse!(equ, ".equ test 10");
+    parse_err!(equ, ".eq rest 10");
+    parse_err!(equ, ".equ test, 20");
+    parse_err!(equ, ".equ rest, 0xff");
+    parse_err!(equ, ".equ 0xff");
+    parse_err!(equ, ".equ label");
 }
 
 #[test]
-fn test_asm_stack() {
-    use Rule::asm_stack;
-    parse!(asm_stack, "*STACKSIZE 16");
-    parse!(asm_stack, "*stacksize noset");
-    parse_err!(asm_stack, "*stacksize 17");
-    parse_err!(asm_stack, "*STACKSIZE48");
+fn test_stack() {
+    use Rule::stacksize;
+    parse!(stacksize, "*STACKSIZE 16");
+    parse!(stacksize, "*stacksize noset");
+    parse_err!(stacksize, "*stacksize 17");
+    parse_err!(stacksize, "*STACKSIZE48");
 }
 
 #[test]
-fn test_ins_inc() {
-    use Rule::ins_inc;
-    parse!(ins_inc, "INC R0");
-    parse!(ins_inc, "inc r2");
-    parse!(ins_inc, "inc R1");
-    parse!(ins_inc, "inc r3");
-    parse_err!(ins_inc, "inc 0xff");
-    parse_err!(ins_inc, "inc r4");
-    parse_err!(ins_inc, "INCR2");
+fn test_inc() {
+    use Rule::inc;
+    parse!(inc, "INC R0");
+    parse!(inc, "inc r2");
+    parse!(inc, "inc R1");
+    parse!(inc, "inc r3");
+    parse_err!(inc, "inc 0xff");
+    parse_err!(inc, "inc r4");
+    parse_err!(inc, "INCR2");
 }
 
 #[test]
@@ -286,5 +275,8 @@ fn test_line() {
 #[test]
 fn test_file() {
     use Rule::file;
-    parse!(file, "#! mrasm\nHERE:    ;jump here\ninc r0;increase this\n\n");
+    parse!(
+        file,
+        "#! mrasm\nHERE:    ;jump here\ninc r0;increase this\n\n"
+    );
 }
