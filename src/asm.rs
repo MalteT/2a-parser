@@ -1,9 +1,9 @@
 pub type Comment = String;
 pub type Label = String;
 
-mod trait_impls;
 #[cfg(feature = "formatting")]
 mod format;
+mod trait_impls;
 
 /// A single byte.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]

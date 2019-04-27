@@ -1,5 +1,5 @@
-use pad::PadStr;
 use colored::Colorize;
+use pad::PadStr;
 
 use std::fmt;
 
@@ -215,10 +215,8 @@ impl fmt::Display for Asm {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use crate::asm::display::Format;
     use crate::asm::*;
 
     macro_rules! s {
@@ -236,18 +234,18 @@ mod test {
 
     #[test]
     fn test_display_byte() {
-        s!(Byte::Constant(16).format(), "0x10");
-        s!(Byte::Constant(255).format(), "0xFF");
-        s!(Byte::Constant(15).format(), "0x0F");
+        s!(Byte::Constant(16), "0x10");
+        s!(Byte::Constant(255), "0xFF");
+        s!(Byte::Constant(15), "0x0F");
     }
 
     #[test]
     fn test_display_stacksize() {
-        s!(Stacksize::_16.format(), "16");
-        s!(Stacksize::_32.format(), "32");
-        s!(Stacksize::_48.format(), "48");
-        s!(Stacksize::_64.format(), "64");
-        s!(Stacksize::NotSet.format(), "NOSET");
+        s!(Stacksize::_16, "16");
+        s!(Stacksize::_32, "32");
+        s!(Stacksize::_48, "48");
+        s!(Stacksize::_64, "64");
+        s!(Stacksize::NotSet, "NOSET");
     }
 
     #[test]
@@ -268,7 +266,7 @@ mod test {
 
     #[test]
     fn test_display_instruction() {
-        s!(Instruction::AsmOrigin(17.into()), ".ORG\t0x11");
+        s!(Instruction::AsmOrigin(17.into()), ".ORG 0x11");
         s!(Instruction::AsmByte(0x0A.into()), ".BYTE\t0x0A");
         s!(
             Instruction::AsmDefineBytes(vec![0.into(), 255.into(), 33.into(), 1.into()]),
