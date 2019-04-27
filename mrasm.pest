@@ -1,47 +1,112 @@
 
-eol         = _{ NEWLINE }
-colon       = _{ ":" }
-semicolon   = _{ ";" }
-ws          = _{ (" " | "\t")+ }
+eol          = ${ NEWLINE }
+colon        = ${ ":" }
+semicolon    = ${ ";" }
+ws           = ${ (" " | "\t")+ }
+comma        = ${ ws? ~ "," ~ ws? }
 
-number_bin  = ${ "0b" ~ ASCII_BIN_DIGIT+ }
-number_hex  = ${ "0x" ~ ASCII_HEX_DIGIT+ }
-number_dec  = ${ ASCII_DIGIT+ }
-number      = ${ number_bin | number_hex | number_dec }
-label       = @{ !( "R" | "PC" | "SP" ) ~ ASCII_ALPHANUMERIC+ }
-rest        = @{ ( !eol ~ ANY )* }
-stacksize   = @{ "16" | "32" | "48" | "64" | ^"NOSET" }
-register    = @{ ^"R" ~ '0'..'3' }
-address     = ${ "(" ~ (label | number) ~ ")" }
+oparen       = ${ "(" }
+cparen       = ${ ")" }
+plus         = ${ "+" }
 
-comment     = ${ semicolon ~ rest }
-target      = ${ label ~ colon }
-header      = _{ "#! mrasm" ~ (eol | EOI) }
+constant_bin =  { "0b" ~ ASCII_BIN_DIGIT{1,8} }
+constant_hex =  { "0x" ~ ASCII_HEX_DIGIT{1,2} }
+constant_dec =  { ASCII_DIGIT+ }
+constant     =  { constant_bin | constant_hex | constant_dec | raw_label }
+rest         =  { ( !eol ~ ANY )* }
+raw_label    =  { !( ^"R" | ^"PC" | ^"SP" ) ~ ASCII_ALPHANUMERIC+ }
+raw_stacksize=  { "16" | "32" | "48" | "64" | ^"NOSET" }
+register     =  { ( ^"R" ~ '0'..'3' ) }
+registerdi   =  { oparen ~ register ~ plus ~ cparen }
+registerddi  =  { oparen ~ registerdi ~ cparen }
+memory       =  { oparen ~ (constant | register | raw_label) ~ cparen }
+source       =  { register | registerdi | registerddi | memory | constant }
+destination  =  { register | registerdi | registerddi | memory | constant }
 
-asm_org     = ${ ^".ORG"        ~ ws ~ number    }
-asm_byte    = ${ ^".BYTE"       ~ ws ~ number    }
-asm_db      = ${ ^".DB"         ~ ws ~ number    ~ ( ws* ~ "," ~ ws* ~ number )* }
-asm_dw      = ${ ^".DW"         ~ ws ~ number    ~ ( ws* ~ "," ~ ws* ~ number )* }
-asm_equ     = ${ ^".EQU"        ~ ws ~ label     ~ ws  ~ number }
-asm_stack   = ${ ^"*STACKSIZE"  ~ ws ~ stacksize }
+// Assembler operations
+org       =  { ^".ORG"       ~ ws ~ constant    }
+byte      =  { ^".BYTE"      ~ ws ~ constant    }
+db        =  { ^".DB"        ~ ws ~ constant    ~ ( comma ~ constant )*           }
+dw        =  { ^".DW"        ~ ws ~ constant    ~ ( comma ~ constant )*           }
+equ       =  { ^".EQU"       ~ ws ~ raw_label   ~ ws      ~ constant              }
+stacksize =  { ^"*STACKSIZE" ~ ws ~ raw_stacksize }
 
-ins_clr     = ${ ^"CLR"         ~ ws ~ register  }
-ins_inc     = ${ ^"INC"         ~ ws ~ register  }
-ins_st      = ${ ^"ST"          ~ ws ~ address   ~ ws  ~ "," ~ ws ~ register }
-ins_jr      = ${ ^"JR"          ~ ws ~ label     }
+// Arithmetic operations
+clr       =  { ^"CLR"        ~ ws ~ register    }
+add       =  { ^"ADD"        ~ ws ~ register    ~ comma   ~ register              }
+adc       =  { ^"ADC"        ~ ws ~ register    ~ comma   ~ register              }
+sub       =  { ^"SUB"        ~ ws ~ register    ~ comma   ~ register              }
+mul       =  { ^"MUL"        ~ ws ~ register    ~ comma   ~ register              }
+div       =  { ^"DIV"        ~ ws ~ register    ~ comma   ~ register              }
+inc       =  { ^"INC"        ~ ws ~ register    }
+dec       =  { ^"DEC"        ~ ws ~ source      }
+neg       =  { ^"NEG"        ~ ws ~ register    }
 
-instruction =  {
-    asm_org     |
-    asm_byte    |
-    asm_db      |
-    asm_dw      |
-    asm_equ     |
-    asm_stack   |
-    ins_inc
+// Logic operations
+and       =  { ^"AND"        ~ ws ~ register    ~ comma   ~ register              }
+or        =  { ^"OR"         ~ ws ~ register    ~ comma   ~ register              }
+xor       =  { ^"XOR"        ~ ws ~ register    ~ comma   ~ register              }
+com       =  { ^"COM"        ~ ws ~ register    }
+bits      =  { ^"BITS"       ~ ws ~ destination ~ comma   ~ source                }
+bitc      =  { ^"BITC"       ~ ws ~ destination ~ comma   ~ source                }
+
+// Test / Comparison operations
+tst       =  { ^"TST"        ~ ws ~ register    }
+cmp       =  { ^"CMP"        ~ ws ~ destination ~ comma   ~ source                }
+bitt      =  { ^"BITT"       ~ ws ~ destination ~ comma   ~ source                }
+
+// Bit-Shift operations
+lsr       =  { ^"LSR"        ~ ws ~ register    }
+asr       =  { ^"ASR"        ~ ws ~ register    }
+lsl       =  { ^"LSL"        ~ ws ~ register    }
+rrc       =  { ^"RRC"        ~ ws ~ register    }
+rlc       =  { ^"RLC"        ~ ws ~ register    }
+
+// Data-Copying operations
+mov       =  { ^"MOV"        ~ ws ~ destination ~ comma   ~ source                }
+ld_const  =  { ^"LD"         ~ ws ~ register    ~ comma   ~ constant              }
+ld_memory =  { ^"LD"         ~ ws ~ register    ~ comma   ~ memory                }
+st        =  { ^"ST"         ~ ws ~ memory      ~ comma   ~ register              }
+push      =  { ^"PUSH"       ~ ws ~ register    }
+pop       =  { ^"POP"        ~ ws ~ register    }
+pushf     =  { ^"PUSHF"      }
+popf      =  { ^"POPF"       }
+ldsp      =  { ^"LDSP"       ~ ws ~ source      }
+ldfr      =  { ^"LDFR"       ~ ws ~ source      }
+
+// Decision-Making operations
+jmp       =  { ^"JMP"        ~ ws ~ memory      }
+jcs       =  { ^"JCS"        ~ ws ~ raw_label   }
+jcc       =  { ^"JCC"        ~ ws ~ raw_label   }
+jzs       =  { ^"JZS"        ~ ws ~ raw_label   }
+jzc       =  { ^"JZC"        ~ ws ~ raw_label   }
+jns       =  { ^"JNS"        ~ ws ~ raw_label   }
+jnc       =  { ^"JNC"        ~ ws ~ raw_label   }
+jr        =  { ^"JR"         ~ ws ~ raw_label   }
+call      =  { ^"CALL"       ~ ws ~ raw_label   }
+ret       =  { ^"RET"        }
+reti      =  { ^"RETI"       }
+stop      =  { ^"STOP"       }
+nop       =  { ^"NOP"        }
+ei        =  { ^"EI"         }
+di        =  { ^"DI"         }
+
+instruction  =  {
+    org  | byte | db   | dw   | equ | stacksize |
+    clr  | add  | adc  | sub  | mul | div | inc | dec |
+    neg  | and  | or   | xor  | com | bits | bitc |
+    tst  | cmp  | bitt |
+    lsr  | asr  | lsl  | rrc  | rlc |
+    mov  | ld_const | ld_memory | st   | push | pop | pushf | popf | ldsp | ldfr |
+    jmp  | jcs  | jcc  | jzs  | jzc | jns | jnc | jr | call | ret | reti |
+    stop | nop  | ei    | di
 }
 
-line        =  { (target | instruction)? ~ comment? }
+comment      =  { semicolon ~ rest }
+label        =  { raw_label ~ colon }
+header       =  { "#! mrasm" ~ ws? ~ comment? ~ (eol | EOI) }
 
-file        =  { SOI ~ header ~ (line ~ eol)* ~ line ~ EOI }
 
-WHITESPACE  = _{ " " | "\t" }
+line         =  { ws? ~ (label | instruction)? ~ ws? ~ comment? }
+
+file         = _{ SOI ~ header ~ (line ~ eol)* ~ line ~ EOI }
