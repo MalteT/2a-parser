@@ -5,11 +5,8 @@ use std::fmt;
 
 use super::Rule;
 
-// FIXME: I don't want a NotAByte thing, parser should catch wrong numbers!
 #[derive(Debug, Fail)]
 pub enum ParserError {
-    //#[fail(display = "{} is to large for a byte: {}", _0, _1)]
-    NotAByte(String, #[fail(reason)] std::num::ParseIntError),
     //#[fail(display = "failed to parse input \n{}", _0)]
     InvalidSyntax(#[fail(reason)] PestError<Rule>),
 }
@@ -72,7 +69,6 @@ impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         println!("{:#?}", self);
         match self {
-            ParserError::NotAByte(_s, inner) => write!(f, "{}", inner),
             ParserError::InvalidSyntax(inner) => write!(f, "{}", inner),
         }
     }
