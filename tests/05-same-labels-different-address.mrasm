@@ -1,4 +1,4 @@
-#!mrasm
+#! mrasm
 
 LOOP:
     LD R0, 42

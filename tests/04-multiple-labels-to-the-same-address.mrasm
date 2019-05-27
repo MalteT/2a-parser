@@ -1,4 +1,4 @@
-#!mrasm
+#! mrasm
 
 FIRST_LINE:
 LOOP:
