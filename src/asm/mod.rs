@@ -6,6 +6,7 @@ mod format;
 mod trait_impls;
 
 /// A single byte.
+/// Either given by a constant or a label.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Byte {
     Constant(u8),

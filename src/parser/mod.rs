@@ -1,3 +1,7 @@
+//! # Minirechner 2a assembly parsing
+//!
+//! For a complete reference of the assembly syntax see the official resources by Werner Dreher or
+//! the Manual by Max Braungardt and Thomas Schmid.
 use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::Parser;
@@ -12,6 +16,8 @@ pub use error::ParserError;
 
 type ParseResult<T> = Result<T, ParserError>;
 
+/// Parser for valid Minirechner 2a assembly files.
+/// See [module documentation](crate::parser) for more information.
 #[derive(Parser)]
 #[grammar = "../mrasm.pest"]
 pub struct AsmParser;
@@ -74,7 +80,7 @@ fn ignore<T>(_: T) -> () {
 }
 
 impl AsmParser {
-    /// Parse a valid Minirechner 2a assembler file.
+    /// Parse a valid Minirechner 2a assembly file.
     ///
     /// # Arguments
     /// - `input`: The [`str`] to parse.
@@ -134,13 +140,7 @@ fn parse_line(line: Pair<Rule>) -> ParseResult<Line> {
     }
     Ok(ret)
 }
-/// Parse a label rule into a [`Label`].
-///
-/// # Arguments
-/// - `label`: The [`Rule`] pair to be parsed.
-///
-/// # Returns
-/// - The parsed `Label`
+/// Parse a `label` rule into a [`Label`].
 fn parse_label(label: Pair<Rule>) -> Label {
     let (label, _) = inner_tuple! { label;
         raw_label => parse_raw_label;
@@ -148,24 +148,11 @@ fn parse_label(label: Pair<Rule>) -> Label {
     };
     label
 }
-/// Parse a raw_label rule into a [`Label`].
-///
-/// # Arguments
-/// - `label`: The [`Rule`] pair to be parsed.
-///
-/// # Returns
-/// - The parsed `Label`
+/// Parse a `raw_label` rule into a [`Label`].
 fn parse_raw_label(label: Pair<Rule>) -> Label {
     label.as_str().into()
 }
-/// Parse an instruction rule into an [`Instruction`].
-///
-/// # Arguments
-/// - `instruction`: The [`Rule`] pair to be parsed.
-///
-/// # Returns
-/// - The parsed `Instruction`, or
-/// - a [`ParseError`]
+/// Parse an `instruction` rule into an [`Instruction`].
 fn parse_instruction(instruction: Pair<Rule>) -> ParseResult<Instruction> {
     let instruction = instruction
         .into_inner()
@@ -230,7 +217,7 @@ fn parse_instruction(instruction: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(instruction)
 }
-/// Parse an org rule into an [`Instruction`].
+/// Parse an `org` rule into an [`Instruction`].
 fn parse_instruction_org(org: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, constant) = inner_tuple! { org;
         ws          => ignore;
@@ -238,7 +225,7 @@ fn parse_instruction_org(org: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::AsmOrigin(constant?))
 }
-/// Parse a constant rule into a [`Byte`].
+/// Parse a `constant` rule into a [`Byte`].
 fn parse_byte(constant: Pair<Rule>) -> ParseResult<Byte> {
     let inner = inner_tuple! { constant;
         constant_bin | constant_hex | constant_dec | raw_label => id;
@@ -257,7 +244,7 @@ fn parse_byte(constant: Pair<Rule>) -> ParseResult<Byte> {
         _ => unreachable!(),
     }
 }
-/// Parse a constant rule into a [`Byte`].
+/// Parse a `constant` rule into a [`Byte`].
 fn parse_word(constant: Pair<Rule>) -> ParseResult<Word> {
     let inner = inner_tuple! { constant;
         constant_bin | constant_hex | constant_dec | raw_label => id;
@@ -276,14 +263,14 @@ fn parse_word(constant: Pair<Rule>) -> ParseResult<Word> {
         _ => unreachable!(),
     }
 }
-/// Parse a byte rule into an [`Instruction`].
+/// Parse a `byte` rule into an [`Instruction`].
 fn parse_instruction_byte(byte: Pair<Rule>) -> ParseResult<Instruction> {
     let byte = inner_tuple! { byte;
         constant => parse_byte;
     };
     Ok(Instruction::AsmByte(byte?))
 }
-/// Parse a db rule into an [`Instruction`].
+/// Parse a `db` rule into an [`Instruction`].
 fn parse_instruction_db(db: Pair<Rule>) -> ParseResult<Instruction> {
     let mut results = db
         .into_inner()
@@ -297,7 +284,7 @@ fn parse_instruction_db(db: Pair<Rule>) -> ParseResult<Instruction> {
     let bytes = results.map(|result| result.unwrap()).collect();
     Ok(Instruction::AsmDefineBytes(bytes))
 }
-/// Parse a dw rule into an [`Instruction`].
+/// Parse a `dw` rule into an [`Instruction`].
 fn parse_instruction_dw(dw: Pair<Rule>) -> ParseResult<Instruction> {
     let mut results = dw
         .into_inner()
@@ -311,7 +298,7 @@ fn parse_instruction_dw(dw: Pair<Rule>) -> ParseResult<Instruction> {
     let words = results.map(|result| result.unwrap()).collect();
     Ok(Instruction::AsmDefineWords(words))
 }
-/// Parse an equ rule into an [`Instruction`].
+/// Parse an `equ` rule into an [`Instruction`].
 fn parse_instruction_equ(equ: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, label, _, constant) = inner_tuple! { equ;
         ws          => ignore;
@@ -321,7 +308,7 @@ fn parse_instruction_equ(equ: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::AsmEquals(label, constant?))
 }
-/// Parse a stacksize rule into an [`Instruction`].
+/// Parse a `stacksize` rule into an [`Instruction`].
 fn parse_instruction_stacksize(instruction: Pair<Rule>) -> Instruction {
     let (_, stacksize) = inner_tuple! { instruction;
         ws              => ignore;
@@ -329,7 +316,7 @@ fn parse_instruction_stacksize(instruction: Pair<Rule>) -> Instruction {
     };
     Instruction::AsmStacksize(stacksize)
 }
-/// Parse a raw_stacksize rule into a [`Stacksize`].
+/// Parse a `raw_stacksize` rule into a [`Stacksize`].
 fn parse_raw_stacksize(stacksize: Pair<Rule>) -> Stacksize {
     let stacksize = stacksize.as_str().to_lowercase();
     match stacksize.as_str() {
@@ -341,7 +328,7 @@ fn parse_raw_stacksize(stacksize: Pair<Rule>) -> Stacksize {
         _ => unreachable!(),
     }
 }
-/// Parse a clr rule into an [`Instruction`].
+/// Parse a `clr` rule into an [`Instruction`].
 fn parse_instruction_clr(instruction: Pair<Rule>) -> Instruction {
     let (_, register) = inner_tuple! { instruction;
         ws          => ignore;
@@ -349,7 +336,7 @@ fn parse_instruction_clr(instruction: Pair<Rule>) -> Instruction {
     };
     Instruction::Clr(register)
 }
-/// Parse a register rule into a [`Register`].
+/// Parse a `register` rule into a [`Register`].
 fn parse_register(register: Pair<Rule>) -> Register {
     let reg = register.as_str().to_lowercase();
     match reg.as_str() {
@@ -357,10 +344,11 @@ fn parse_register(register: Pair<Rule>) -> Register {
         "r1" => Register::R1,
         "r2" => Register::R2,
         "r3" => Register::R3,
+        "pc" => Register::R3,
         _ => unreachable!(),
     }
 }
-/// Parse an add rule into an [`Instruction`].
+/// Parse an `add` rule into an [`Instruction`].
 fn parse_instruction_add(add: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { add;
         ws          => ignore;
@@ -370,7 +358,7 @@ fn parse_instruction_add(add: Pair<Rule>) -> Instruction {
     };
     Instruction::Add(reg1, reg2)
 }
-/// Parse an adc rule into an [`Instruction`].
+/// Parse an `adc` rule into an [`Instruction`].
 fn parse_instruction_adc(adc: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { adc;
         ws          => ignore;
@@ -380,7 +368,7 @@ fn parse_instruction_adc(adc: Pair<Rule>) -> Instruction {
     };
     Instruction::Adc(reg1, reg2)
 }
-/// Parse a sub rule into an [`Instruction`].
+/// Parse a `sub` rule into an [`Instruction`].
 fn parse_instruction_sub(sub: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { sub;
         ws          => ignore;
@@ -390,7 +378,7 @@ fn parse_instruction_sub(sub: Pair<Rule>) -> Instruction {
     };
     Instruction::Sub(reg1, reg2)
 }
-/// Parse a mul rule into an [`Instruction`].
+/// Parse a `mul` rule into an [`Instruction`].
 fn parse_instruction_mul(mul: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { mul;
         ws          => ignore;
@@ -400,7 +388,7 @@ fn parse_instruction_mul(mul: Pair<Rule>) -> Instruction {
     };
     Instruction::Mul(reg1, reg2)
 }
-/// Parse a div rule into an [`Instruction`].
+/// Parse a `div` rule into an [`Instruction`].
 fn parse_instruction_div(div: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { div;
         ws          => ignore;
@@ -410,7 +398,7 @@ fn parse_instruction_div(div: Pair<Rule>) -> Instruction {
     };
     Instruction::Div(reg1, reg2)
 }
-/// Parse an inc rule into an [`Instruction`].
+/// Parse an `inc` rule into an [`Instruction`].
 fn parse_instruction_inc(inc: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { inc;
         ws          => ignore;
@@ -418,7 +406,7 @@ fn parse_instruction_inc(inc: Pair<Rule>) -> Instruction {
     };
     Instruction::Inc(reg)
 }
-/// Parse a dec rule into an [`Instruction`].
+/// Parse a `dec` rule into an [`Instruction`].
 fn parse_instruction_dec(dec: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, source) = inner_tuple! { dec;
         ws      => ignore;
@@ -426,7 +414,7 @@ fn parse_instruction_dec(dec: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Dec(source?))
 }
-/// Parse a source rule into a [`Source`].
+/// Parse a `source` rule into a [`Source`].
 fn parse_source(source: Pair<Rule>) -> ParseResult<Source> {
     let inner = source
         .into_inner()
@@ -442,7 +430,7 @@ fn parse_source(source: Pair<Rule>) -> ParseResult<Source> {
     };
     Ok(source)
 }
-/// Parse a registerdi rule into a [`RegisterDI`].
+/// Parse a `registerdi` rule into a [`RegisterDI`].
 fn parse_register_di(registerdi: Pair<Rule>) -> RegisterDI {
     let (_, register, _, _) = inner_tuple! { registerdi;
         oparen      => ignore;
@@ -452,7 +440,7 @@ fn parse_register_di(registerdi: Pair<Rule>) -> RegisterDI {
     };
     register.into()
 }
-/// Parse a registerddi rule into a [`RegisterDDI`].
+/// Parse a `registerddi` rule into a [`RegisterDDI`].
 fn parse_register_ddi(registerddi: Pair<Rule>) -> RegisterDDI {
     let (_, register, _) = inner_tuple! { registerddi;
         oparen      => ignore;
@@ -461,7 +449,7 @@ fn parse_register_ddi(registerddi: Pair<Rule>) -> RegisterDDI {
     };
     register.into()
 }
-/// Parse a memory rule into a [`MemAddress`].
+/// Parse a `memory` rule into a [`MemAddress`].
 fn parse_memory(memory: Pair<Rule>) -> ParseResult<MemAddress> {
     let (_, inner, _) = inner_tuple! { memory;
         oparen                                                  => ignore;
@@ -476,7 +464,7 @@ fn parse_memory(memory: Pair<Rule>) -> ParseResult<MemAddress> {
     };
     Ok(memory)
 }
-/// Parse a neg rule into an [`Instruction`].
+/// Parse a `neg` rule into an [`Instruction`].
 fn parse_instruction_neg(neg: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { neg;
         ws          => ignore;
@@ -484,7 +472,7 @@ fn parse_instruction_neg(neg: Pair<Rule>) -> Instruction {
     };
     Instruction::Neg(reg)
 }
-/// Parse an and rule into an [`Instruction`].
+/// Parse an `and` rule into an [`Instruction`].
 fn parse_instruction_and(and: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { and;
         ws          => ignore;
@@ -494,7 +482,7 @@ fn parse_instruction_and(and: Pair<Rule>) -> Instruction {
     };
     Instruction::And(reg1, reg2)
 }
-/// Parse an or rule into an [`Instruction`].
+/// Parse an `or` rule into an [`Instruction`].
 fn parse_instruction_or(or: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { or;
         ws          => ignore;
@@ -504,7 +492,7 @@ fn parse_instruction_or(or: Pair<Rule>) -> Instruction {
     };
     Instruction::Or(reg1, reg2)
 }
-/// Parse an xor rule into an [`Instruction`].
+/// Parse an `xor` rule into an [`Instruction`].
 fn parse_instruction_xor(xor: Pair<Rule>) -> Instruction {
     let (_, reg1, _, reg2) = inner_tuple! { xor;
         ws          => ignore;
@@ -514,7 +502,7 @@ fn parse_instruction_xor(xor: Pair<Rule>) -> Instruction {
     };
     Instruction::Xor(reg1, reg2)
 }
-/// Parse a com rule into an [`Instruction`].
+/// Parse a `com` rule into an [`Instruction`].
 fn parse_instruction_com(com: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { com;
         ws          => ignore;
@@ -522,7 +510,7 @@ fn parse_instruction_com(com: Pair<Rule>) -> Instruction {
     };
     Instruction::Com(reg)
 }
-/// Parse a bits rule into an [`Instruction`].
+/// Parse a `bits` rule into an [`Instruction`].
 fn parse_instruction_bits(bits: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, dst, _, src) = inner_tuple! { bits;
         ws          => ignore;
@@ -532,7 +520,7 @@ fn parse_instruction_bits(bits: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Bits(dst?, src?))
 }
-/// Parse a destination rule into a [`Destination`].
+/// Parse a `destination` rule into a [`Destination`].
 fn parse_destination(destination: Pair<Rule>) -> ParseResult<Destination> {
     let inner = destination
         .into_inner()
@@ -548,7 +536,7 @@ fn parse_destination(destination: Pair<Rule>) -> ParseResult<Destination> {
     };
     Ok(destination)
 }
-/// Parse a bitc rule into an [`Instruction`].
+/// Parse a `bitc` rule into an [`Instruction`].
 fn parse_instruction_bitc(bitc: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, dst, _, src) = inner_tuple! { bitc;
         ws          => ignore;
@@ -558,7 +546,7 @@ fn parse_instruction_bitc(bitc: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Bitc(dst?, src?))
 }
-/// Parse a tst rule into an [`Instruction`].
+/// Parse a `tst` rule into an [`Instruction`].
 fn parse_instruction_tst(tst: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { tst;
         ws          => ignore;
@@ -566,7 +554,7 @@ fn parse_instruction_tst(tst: Pair<Rule>) -> Instruction {
     };
     Instruction::Tst(reg)
 }
-/// Parse a cmp rule into an [`Instruction`].
+/// Parse a `cmp` rule into an [`Instruction`].
 fn parse_instruction_cmp(cmp: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, dst, _, src) = inner_tuple! { cmp;
         ws          => ignore;
@@ -576,7 +564,7 @@ fn parse_instruction_cmp(cmp: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Cmp(dst?, src?))
 }
-/// Parse a bitt rule into an [`Instruction`].
+/// Parse a `bitt` rule into an [`Instruction`].
 fn parse_instruction_bitt(bitt: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, dst, _, src) = inner_tuple! { bitt;
         ws          => ignore;
@@ -586,7 +574,7 @@ fn parse_instruction_bitt(bitt: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Bitt(dst?, src?))
 }
-/// Parse a lsr rule into an [`Instruction`].
+/// Parse a `lsr` rule into an [`Instruction`].
 fn parse_instruction_lsr(lsr: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { lsr;
         ws          => ignore;
@@ -594,7 +582,7 @@ fn parse_instruction_lsr(lsr: Pair<Rule>) -> Instruction {
     };
     Instruction::Lsr(reg)
 }
-/// Parse an asr rule into an [`Instruction`].
+/// Parse an `asr` rule into an [`Instruction`].
 fn parse_instruction_asr(asr: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { asr;
         ws          => ignore;
@@ -602,7 +590,7 @@ fn parse_instruction_asr(asr: Pair<Rule>) -> Instruction {
     };
     Instruction::Asr(reg)
 }
-/// Parse a lsl rule into an [`Instruction`].
+/// Parse a `lsl` rule into an [`Instruction`].
 fn parse_instruction_lsl(lsl: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { lsl;
         ws          => ignore;
@@ -610,7 +598,7 @@ fn parse_instruction_lsl(lsl: Pair<Rule>) -> Instruction {
     };
     Instruction::Lsl(reg)
 }
-/// Parse a rrc rule into an [`Instruction`].
+/// Parse an `rrc` rule into an [`Instruction`].
 fn parse_instruction_rrc(rrc: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { rrc;
         ws          => ignore;
@@ -618,7 +606,7 @@ fn parse_instruction_rrc(rrc: Pair<Rule>) -> Instruction {
     };
     Instruction::Rrc(reg)
 }
-/// Parse a rlc rule into an [`Instruction`].
+/// Parse an `rlc` rule into an [`Instruction`].
 fn parse_instruction_rlc(rlc: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { rlc;
         ws          => ignore;
@@ -626,7 +614,7 @@ fn parse_instruction_rlc(rlc: Pair<Rule>) -> Instruction {
     };
     Instruction::Rlc(reg)
 }
-/// Parse a mov rule into an [`Instruction`].
+/// Parse a `mov` rule into an [`Instruction`].
 fn parse_instruction_mov(mov: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, dst, _, src) = inner_tuple! { mov;
         ws          => ignore;
@@ -636,7 +624,7 @@ fn parse_instruction_mov(mov: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Mov(dst?, src?))
 }
-/// Parse a ld_const rule into an [`Instruction`].
+/// Parse an `ld_const` rule into an [`Instruction`].
 fn parse_instruction_ld_const(ld_const: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, reg, _, byte) = inner_tuple! { ld_const;
         ws          => ignore;
@@ -646,7 +634,7 @@ fn parse_instruction_ld_const(ld_const: Pair<Rule>) -> ParseResult<Instruction> 
     };
     Ok(Instruction::LdByte(reg, byte?))
 }
-/// Parse a ld_memory rule into an [`Instruction`].
+/// Parse an `ld_memory` rule into an [`Instruction`].
 fn parse_instruction_ld_memory(ld_memory: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, reg, _, mem) = inner_tuple! { ld_memory;
         ws          => ignore;
@@ -656,7 +644,7 @@ fn parse_instruction_ld_memory(ld_memory: Pair<Rule>) -> ParseResult<Instruction
     };
     Ok(Instruction::LdMemAddress(reg, mem?))
 }
-/// Parse a st rule into an [`Instruction`].
+/// Parse an `st` rule into an [`Instruction`].
 fn parse_instruction_st(st: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, mem, _, reg) = inner_tuple! { st;
         ws          => ignore;
@@ -666,7 +654,7 @@ fn parse_instruction_st(st: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::St(mem?, reg))
 }
-/// Parse a push rule into an [`Instruction`].
+/// Parse a `push` rule into an [`Instruction`].
 fn parse_instruction_push(push: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { push;
         ws          => ignore;
@@ -674,7 +662,7 @@ fn parse_instruction_push(push: Pair<Rule>) -> Instruction {
     };
     Instruction::Push(reg)
 }
-/// Parse a pop rule into an [`Instruction`].
+/// Parse a `pop` rule into an [`Instruction`].
 fn parse_instruction_pop(pop: Pair<Rule>) -> Instruction {
     let (_, reg) = inner_tuple! { pop;
         ws          => ignore;
@@ -682,15 +670,15 @@ fn parse_instruction_pop(pop: Pair<Rule>) -> Instruction {
     };
     Instruction::Pop(reg)
 }
-/// Parse a pushf rule into an [`Instruction`].
+/// Parse a `pushf` rule into an [`Instruction`].
 fn parse_instruction_pushf() -> Instruction {
     Instruction::PushF
 }
-/// Parse a popf rule into an [`Instruction`].
+/// Parse a `popf` rule into an [`Instruction`].
 fn parse_instruction_popf() -> Instruction {
     Instruction::PopF
 }
-/// Parse a ldsp rule into an [`Instruction`].
+/// Parse a `ldsp` rule into an [`Instruction`].
 fn parse_instruction_ldsp(ldsp: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, src) = inner_tuple! { ldsp;
         ws      => ignore;
@@ -698,7 +686,7 @@ fn parse_instruction_ldsp(ldsp: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Ldsp(src?))
 }
-/// Parse a ldfr rule into an [`Instruction`].
+/// Parse a `ldfr` rule into an [`Instruction`].
 fn parse_instruction_ldfr(ldfr: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, src) = inner_tuple! { ldfr;
         ws      => ignore;
@@ -706,7 +694,7 @@ fn parse_instruction_ldfr(ldfr: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Ldfr(src?))
 }
-/// Parse a jmp rule into an [`Instruction`].
+/// Parse a `jmp` rule into an [`Instruction`].
 fn parse_instruction_jmp(jmp: Pair<Rule>) -> ParseResult<Instruction> {
     let (_, mem) = inner_tuple! { jmp;
         ws      => ignore;
@@ -714,7 +702,7 @@ fn parse_instruction_jmp(jmp: Pair<Rule>) -> ParseResult<Instruction> {
     };
     Ok(Instruction::Jmp(mem?))
 }
-/// Parse a jcs rule into an [`Instruction`].
+/// Parse a `jcs` rule into an [`Instruction`].
 fn parse_instruction_jcs(jcs: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jcs;
         ws      => ignore;
@@ -722,7 +710,7 @@ fn parse_instruction_jcs(jcs: Pair<Rule>) -> Instruction {
     };
     Instruction::Jcs(label)
 }
-/// Parse a jcc rule into an [`Instruction`].
+/// Parse a `jcc` rule into an [`Instruction`].
 fn parse_instruction_jcc(jcc: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jcc;
         ws      => ignore;
@@ -730,7 +718,7 @@ fn parse_instruction_jcc(jcc: Pair<Rule>) -> Instruction {
     };
     Instruction::Jcc(label)
 }
-/// Parse a jzs rule into an [`Instruction`].
+/// Parse a `jzs` rule into an [`Instruction`].
 fn parse_instruction_jzs(jzs: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jzs;
         ws      => ignore;
@@ -738,7 +726,7 @@ fn parse_instruction_jzs(jzs: Pair<Rule>) -> Instruction {
     };
     Instruction::Jzs(label)
 }
-/// Parse a jzc rule into an [`Instruction`].
+/// Parse a `jzc` rule into an [`Instruction`].
 fn parse_instruction_jzc(jzc: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jzc;
         ws      => ignore;
@@ -746,7 +734,7 @@ fn parse_instruction_jzc(jzc: Pair<Rule>) -> Instruction {
     };
     Instruction::Jzc(label)
 }
-/// Parse a jns rule into an [`Instruction`].
+/// Parse a `jns` rule into an [`Instruction`].
 fn parse_instruction_jns(jns: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jns;
         ws      => ignore;
@@ -754,7 +742,7 @@ fn parse_instruction_jns(jns: Pair<Rule>) -> Instruction {
     };
     Instruction::Jns(label)
 }
-/// Parse a jnc rule into an [`Instruction`].
+/// Parse a `jnc` rule into an [`Instruction`].
 fn parse_instruction_jnc(jnc: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jnc;
         ws      => ignore;
@@ -762,7 +750,7 @@ fn parse_instruction_jnc(jnc: Pair<Rule>) -> Instruction {
     };
     Instruction::Jnc(label)
 }
-/// Parse a jr rule into an [`Instruction`].
+/// Parse a `jr` rule into an [`Instruction`].
 fn parse_instruction_jr(jr: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jr;
         ws      => ignore;
@@ -770,7 +758,7 @@ fn parse_instruction_jr(jr: Pair<Rule>) -> Instruction {
     };
     Instruction::Jr(label)
 }
-/// Parse a call rule into an [`Instruction`].
+/// Parse a `call` rule into an [`Instruction`].
 fn parse_instruction_call(call: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { call;
         ws          => ignore;
@@ -778,37 +766,31 @@ fn parse_instruction_call(call: Pair<Rule>) -> Instruction {
     };
     Instruction::Call(label)
 }
-/// Parse a ret rule into an [`Instruction`].
+/// Parse a `ret` rule into an [`Instruction`].
 fn parse_instruction_ret() -> Instruction {
     Instruction::Ret
 }
-/// Parse a reti rule into an [`Instruction`].
+/// Parse a `reti` rule into an [`Instruction`].
 fn parse_instruction_reti() -> Instruction {
     Instruction::RetI
 }
-/// Parse a stop rule into an [`Instruction`].
+/// Parse a `stop` rule into an [`Instruction`].
 fn parse_instruction_stop() -> Instruction {
     Instruction::Stop
 }
-/// Parse a nop rule into an [`Instruction`].
+/// Parse a `nop` rule into an [`Instruction`].
 fn parse_instruction_nop() -> Instruction {
     Instruction::Nop
 }
-/// Parse an ei rule into an [`Instruction`].
+/// Parse an `ei` rule into an [`Instruction`].
 fn parse_instruction_ei() -> Instruction {
     Instruction::Ei
 }
-/// Parse a di rule into an [`Instruction`].
+/// Parse a `di` rule into an [`Instruction`].
 fn parse_instruction_di() -> Instruction {
     Instruction::Di
 }
-/// Parse a comment rule into a [`Comment`].
-///
-/// # Arguments
-/// - `comment`: The [`Rule`] pair to be parsed.
-///
-/// # Returns
-/// - The parsed `Comment`
+/// Parse a `comment` rule into a [`Comment`].
 fn parse_comment(comment: Pair<Rule>) -> Comment {
     let (_, comment) = inner_tuple! { comment;
         semicolon   => ignore;
