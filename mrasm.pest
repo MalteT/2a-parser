@@ -105,7 +105,7 @@ instruction  =  {
     tst  | cmp  | bitt |
     lsr  | asr  | lsl  | rrc  | rlc |
     mov  | ld_const | ld_memory | st   | push | pop | pushf | popf | ldsp | ldfr |
-    jmp  | jcs  | jcc  | jzs  | jzc | jns | jnc | jr | call | ret | reti |
+    jmp  | jcs  | jcc  | jzs  | jzc | jns | jnc | jr | call | reti | ret |
     stop | nop  | ei    | di
 }
 
