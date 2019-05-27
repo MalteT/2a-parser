@@ -14,7 +14,6 @@ mod error;
 mod tests;
 
 pub use error::ParserError;
-
 type ParseResult<T> = Result<T, ParserError>;
 
 /// Parser for valid Minirechner 2a assembly files.
@@ -95,7 +94,7 @@ impl AsmParser {
         // iterate over lines, skipping the header
         for line in parsed.skip(1) {
             if line.as_rule() == Rule::line {
-                lines.push(parse_line(line)?);
+                lines.push(parse_line(line));
             }
         }
         Ok(Asm { lines })
@@ -110,7 +109,7 @@ impl AsmParser {
 /// - Some tuple of a [`Line`] and a [`Comment`] or
 /// - None, if the line is empty or
 /// - a [`ParseError`]
-fn parse_line(line: Pair<Rule>) -> ParseResult<Line> {
+fn parse_line(line: Pair<Rule>) -> Line {
     let line = line.into_inner();
     let mut ret = Line::Empty(None);
     // Possible elements in a line:
@@ -125,7 +124,7 @@ fn parse_line(line: Pair<Rule>) -> ParseResult<Line> {
             // The label or instruction rule comes first and they occur
             // exclusive so replacing is just fine.
             Rule::label => Line::Label(parse_label(element), None),
-            Rule::instruction => Line::Instruction(parse_instruction(element)?, None),
+            Rule::instruction => Line::Instruction(parse_instruction(element), None),
             // comment can only occur once.
             // So it has to be THE comment.
             Rule::comment => {
@@ -139,7 +138,7 @@ fn parse_line(line: Pair<Rule>) -> ParseResult<Line> {
             _ => unreachable!(),
         }
     }
-    Ok(ret)
+    ret
 }
 /// Parse a `label` rule into a [`Label`].
 fn parse_label(label: Pair<Rule>) -> Label {
@@ -154,7 +153,7 @@ fn parse_raw_label(label: Pair<Rule>) -> Label {
     label.as_str().into()
 }
 /// Parse an `instruction` rule into an [`Instruction`].
-fn parse_instruction(instruction: Pair<Rule>) -> ParseResult<Instruction> {
+fn parse_instruction(instruction: Pair<Rule>) -> Instruction {
     let instruction = instruction
         .into_inner()
         .next()
@@ -216,7 +215,7 @@ fn parse_instruction(instruction: Pair<Rule>) -> ParseResult<Instruction> {
         Rule::di => parse_instruction_di(),
         _ => unreachable!(),
     };
-    Ok(instruction)
+    instruction
 }
 /// Parse an `org` rule into an [`Instruction`].
 fn parse_instruction_org(org: Pair<Rule>) -> Instruction {
