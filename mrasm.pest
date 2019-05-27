@@ -9,9 +9,13 @@ oparen       = ${ "(" }
 cparen       = ${ ")" }
 plus         = ${ "+" }
 
-constant_bin =  { "0b" ~ ASCII_BIN_DIGIT{1,8} }
-constant_hex =  { "0x" ~ ASCII_HEX_DIGIT{1,2} }
-constant_dec =  { ASCII_DIGIT+ }
+constant_bin =  { "0b" ~ ("0"* ~ ASCII_BIN_DIGIT{1,8} | "0"+) }
+constant_hex =  { "0x" ~ ("0"* ~ ASCII_HEX_DIGIT{1,2} | "0"+) }
+constant_dec =  { ( "0"* ~ ( ( "2"      ~ "5"      ~ '0'..'5' ) |
+                             ( "2"      ~ '1'..'4' ~ '0'..'9' ) |
+                             ( "1"      ~ '0'..'9' ~ '0'..'9' ) |
+                                        ( '1'..'9' ~ '0'..'9' ) |
+                                                     '1'..'9'   ) ) | "0"+ }
 constant     =  { constant_bin | constant_hex | constant_dec | raw_label }
 rest         =  { ( !eol ~ ANY )* }
 raw_label    =  { !( ^"R" | ^"PC" | ^"SP" ) ~ ASCII_ALPHANUMERIC+ }
