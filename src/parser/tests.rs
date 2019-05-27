@@ -95,11 +95,10 @@ fn test_constant_dec() {
     use Rule::constant_dec;
     parse!(constant_dec, "0");
     parse!(constant_dec, "10");
-    parse!(constant_dec, "0123456789");
-    parse!(constant_dec, "01a1", "01");
-    parse!(constant_dec, "0123456789a", "0123456789");
+    parse!(constant_dec, "011", "011");
     parse!(constant_dec, "0xff", "0");
     parse!(constant_dec, "0b10", "0");
+    parse!(constant_dec, "0123456789", "0123");
     parse_err!(constant_dec, "");
 }
 

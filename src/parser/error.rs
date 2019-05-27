@@ -32,7 +32,7 @@ macro_rules! map {
                                 return $str.into();
                             }
                         )*
-                        format!("BUG: no custom error message (error pattern: {:?})", positives)
+                        format!("Did not match these: {:?}", positives)
                     },
                     EV::CustomError{ message } => return message.clone(),
                 }
