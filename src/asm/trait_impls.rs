@@ -107,3 +107,12 @@ impl From<Label> for MemAddress {
         MemAddress::Label(label)
     }
 }
+
+impl IntoIterator for Asm {
+    type Item = Line;
+    type IntoIter = ::std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.lines.into_iter()
+    }
+}
