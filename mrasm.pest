@@ -18,7 +18,8 @@ constant_dec =  { ( "0"* ~ ( ( "2"      ~ "5"      ~ '0'..'5' ) |
                                                      '1'..'9'   ) ) | "0"+ }
 constant     =  { constant_bin | constant_hex | constant_dec | raw_label }
 rest         =  { ( !eol ~ ANY )* }
-raw_label    =  { !( ^"R" | ^"PC" | ^"SP" ) ~ ASCII_ALPHANUMERIC+ }
+// TODO: Specify label characters
+raw_label    =  { !( ^"R" | ^"PC" | ^"SP" ) ~ (ASCII_ALPHANUMERIC | "_")+ }
 raw_stacksize=  { "16" | "32" | "48" | "64" | ^"NOSET" }
 register     =  { ( ^"R" ~ '0'..'3' ) | "PC" }
 registerdi   =  { oparen ~ register ~ plus ~ cparen }
@@ -79,7 +80,9 @@ ldsp      =  { ^"LDSP"       ~ ws ~ source      }
 ldfr      =  { ^"LDFR"       ~ ws ~ source      }
 
 // Decision-Making operations
-jmp       =  { ^"JMP"        ~ ws ~ memory      }
+// TODO: JMP (???) / JMP ??? which is legit?
+// TODO: Is it allowed to "JMP 55"?
+jmp       =  { ^"JMP"        ~ ws ~ raw_label   }
 jcs       =  { ^"JCS"        ~ ws ~ raw_label   }
 jcc       =  { ^"JCC"        ~ ws ~ raw_label   }
 jzs       =  { ^"JZS"        ~ ws ~ raw_label   }

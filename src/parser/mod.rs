@@ -684,11 +684,12 @@ fn parse_instruction_ldfr(ldfr: Pair<Rule>) -> Instruction {
 }
 /// Parse a `jmp` rule into an [`Instruction`].
 fn parse_instruction_jmp(jmp: Pair<Rule>) -> Instruction {
-    let (_, mem) = inner_tuple! { jmp;
-        ws      => ignore;
-        memory  => parse_memory;
+    let (_, label) = inner_tuple! { jmp;
+        ws        => ignore;
+        // TODO: Is this right, or is a const allowed?
+        raw_label => parse_raw_label;
     };
-    Instruction::Jmp(mem)
+    Instruction::Jmp(label)
 }
 /// Parse a `jcs` rule into an [`Instruction`].
 fn parse_instruction_jcs(jcs: Pair<Rule>) -> Instruction {

@@ -170,7 +170,7 @@ pub enum Instruction {
     /// Load flag register from source.
     Ldfr(Source),
     /// Jump.
-    Jmp(MemAddress),
+    Jmp(Label),
     /// Jump if carry set.
     Jcs(Label),
     /// Jump if carry cleared.
