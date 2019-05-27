@@ -1,6 +1,7 @@
 //! # Minirechner 2a assembly parsing
 //!
-//! For a complete reference of the assembly syntax see the official resources by Werner Dreher or
+//! For a complete reference of the assembly syntax
+//! see the official resources by Werner Dreher or
 //! the Manual by Max Braungardt and Thomas Schmid.
 use pest::iterators::Pair;
 use pest::Parser;

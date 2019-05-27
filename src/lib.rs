@@ -4,7 +4,7 @@
 //!
 //! # Example
 //! ```
-//! use asm_parser::parser::AsmParser;
+//! use mr2a_asm_parser::parser::AsmParser;
 //!
 //! fn main() {
 //!     let asm = r##"#! mrasm

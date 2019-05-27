@@ -15,6 +15,7 @@ pub enum Byte {
 
 /// A single word.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+// TODO: Specify behaviour in programs
 pub enum Word {
     Constant(u16),
     Label(Label),
