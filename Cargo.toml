@@ -11,7 +11,6 @@ path = "src/lib.rs"
 [[bin]]
 name = "asm_parser_bin"
 path = "src/main.rs"
-required-features = ["formatting"]
 
 [dependencies]
 pest = "2.1"
