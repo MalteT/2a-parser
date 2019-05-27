@@ -48,11 +48,10 @@ macro_rules! map {
 
 impl From<PestError<Rule>> for ParserError {
     fn from(e: PestError<Rule>) -> Self {
-        println!("{:?}", e);
         use Rule::*;
         // TODO: More of these helpful messages!
         let e = map! { e;
-            header => "All source files have to begin with '#! mrasm'";
+            header => "All source files have to begin with '#! mrasm', followed by a newline";
             oparen => "Expected an openining parenthesis '('";
             cparen => "Expected a closing parenthesis ')'";
             source => "Expected a general source (i.e. 'R0', '(R1+)', '((R0+))', '(LABEL)', '0x34', etc)";
@@ -67,7 +66,6 @@ impl From<PestError<Rule>> for ParserError {
 
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        println!("{:#?}", self);
         match self {
             ParserError::InvalidSyntax(inner) => write!(f, "{}", inner),
         }
