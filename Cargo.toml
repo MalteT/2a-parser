@@ -1,11 +1,11 @@
 [package]
-name = "asm_parser"
+name = "mr2a_asm_parser"
 version = "0.2.0"
 authors = ["Malte Tammena <malte.tammena@gmx.de>"]
 edition = "2018"
 
 [lib]
-name = "asm_parser"
+name = "mr2a_asm_parser"
 path = "src/lib.rs"
 
 [[bin]]

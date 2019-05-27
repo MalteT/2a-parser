@@ -1,4 +1,4 @@
-use asm_parser::parser::AsmParser;
+use mr2a_asm_parser::parser::AsmParser;
 
 const PROGRAM: &str = include_str!("../programs/03-SS17-5-a2c.asm");
 
