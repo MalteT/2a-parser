@@ -3,7 +3,7 @@
 Crate to parse assembly programs into a usable structure.
 Supports optional formatting using the `formatting` flag.
 
-# Example
+## Example
 
 ```rust
 use mr2a_asm_parser::parser::AsmParser;
