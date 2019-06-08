@@ -7,8 +7,12 @@ use super::Rule;
 
 #[derive(Debug, Fail)]
 pub enum ParserError {
+    /// Some syntax violation occured.
     InvalidSyntax(#[fail(reason)] PestError<Rule>),
+    /// An undefined Label was referenced.
     UndefinedLabels(Vec<String>),
+    /// More than 40 Labels have been used.
+    TooManyLabels,
 }
 
 macro_rules! map {
@@ -29,7 +33,7 @@ macro_rules! map {
                                 }
                             }
                             if contains_all {
-                                return $str.into();
+                                return format!("{:?}\n  => {}", positives, $str);
                             }
                         )*
                         format!("Did not match these: {:?}", positives)
@@ -69,7 +73,14 @@ impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ParserError::InvalidSyntax(inner) => write!(f, "{}", inner),
-            ParserError::UndefinedLabels(labels) => write!(f, "Undefined Labels: {:#?}", labels),
+            ParserError::UndefinedLabels(labels) => {
+                write!(f, "Undefined references! These labels are undefined:\n")?;
+                for label in labels {
+                    write!(f, "\t- {}", label)?;
+                }
+                Ok(())
+            }
+            ParserError::TooManyLabels => write!(f, "More than 40 Labels have been used. 'mcontrol' can't handle this!"),
         }
     }
 }

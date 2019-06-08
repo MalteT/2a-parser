@@ -189,7 +189,9 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
             _ => {}
         }
     }
-    if undefined_labels.is_empty() {
+    if labels.len() > 40 {
+        Err(ParserError::TooManyLabels)
+    } else if undefined_labels.is_empty() {
         Ok(())
     } else {
         Err(ParserError::UndefinedLabels(undefined_labels))
