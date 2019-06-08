@@ -80,7 +80,10 @@ impl fmt::Display for ParserError {
                 }
                 Ok(())
             }
-            ParserError::TooManyLabels => write!(f, "More than 40 Labels have been used. 'mcontrol' can't handle this!"),
+            ParserError::TooManyLabels => write!(
+                f,
+                "More than 40 Labels have been used. 'mcontrol' can't handle this!"
+            ),
         }
     }
 }

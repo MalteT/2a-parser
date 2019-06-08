@@ -151,7 +151,6 @@ fn parse_line(line: Pair<Rule>) -> Line {
 /// # Checks
 /// - Undefined Labels
 /// TODO: Match Labels case insensitive?
-/// TODO: Labels can be referenced in far more locations, fix that
 fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     // Collect labels
     let mut labels = vec![];
@@ -167,27 +166,79 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     }
     // Check for undefined labels
     let mut undefined_labels: Vec<String> = vec![];
+    // Function to map a Constant to a vec of labels
+    let const_to_vec = |c: &Constant| match c {
+        Constant::Label(label) => vec![label.clone()],
+        Constant::Constant(_) => vec![],
+    };
+    // Function to map a Memory to a vec of labels
+    let mem_to_vec = |c: &MemAddress| match c {
+        MemAddress::Constant(c) => const_to_vec(&c),
+        MemAddress::Label(label) => vec![label.clone()],
+        MemAddress::Register(_) => vec![],
+    };
+    // Function to map a Source to a vec of labels
+    let src_to_vec = |src: &Source| match src {
+        Source::MemAddress(mem) => mem_to_vec(mem),
+        Source::Constant(c) => const_to_vec(c),
+        _ => vec![],
+    };
+    // Function to map a Destination to a vec of labels
+    let dst_to_vec = |dst: &Destination| match dst {
+        Destination::MemAddress(mem) => mem_to_vec(mem),
+        Destination::Constant(c) => const_to_vec(c),
+        _ => vec![],
+    };
     for line in lines {
-        let label = match line {
+        let mut refs = match line {
             Line::Instruction(inst, _) => match inst {
-                Instruction::Jmp(label) |
-                Instruction::Jcs(label) |
-                Instruction::Jcc(label) |
-                Instruction::Jzs(label) |
-                Instruction::Jzc(label) |
-                Instruction::Jns(label) |
-                Instruction::Jnc(label) |
-                Instruction::Jr(label) |
-                Instruction::Call(label) => Some(label),
-                _ => None,
+                Instruction::Jmp(label)
+                | Instruction::Jcs(label)
+                | Instruction::Jcc(label)
+                | Instruction::Jzs(label)
+                | Instruction::Jzc(label)
+                | Instruction::Jns(label)
+                | Instruction::Jnc(label)
+                | Instruction::Jr(label)
+                | Instruction::Call(label) => vec![label.clone()],
+                Instruction::AsmOrigin(c)
+                | Instruction::AsmByte(c)
+                | Instruction::LdConstant(_, c) => const_to_vec(c),
+                Instruction::AsmDefineBytes(constants) => {
+                    constants.iter().map(const_to_vec).flatten().collect()
+                }
+                Instruction::AsmDefineWords(words) => words
+                    .iter()
+                    .cloned()
+                    .map(|w| match w {
+                        Word::Label(label) => vec![label],
+                        Word::Constant(_) => vec![],
+                    })
+                    .flatten()
+                    .collect(),
+                Instruction::LdMemAddress(_, mem) | Instruction::St(mem, _) => mem_to_vec(mem),
+                Instruction::Dec(src)
+                | Instruction::Ldsp(src)
+                | Instruction::Ldfr(src) => src_to_vec(src),
+                | Instruction::Bits(dst, src)
+                | Instruction::Bitc(dst, src)
+                | Instruction::Cmp(dst, src)
+                | Instruction::Bitt(dst, src)
+                | Instruction::Mov(dst, src) => {
+                    let mut labels = dst_to_vec(dst);
+                    labels.append(&mut src_to_vec(src));
+                    labels
+                }
+                _ => vec![],
             },
-            _ => None,
+            _ => vec![],
         };
-        // Check if label exists, add to the list of undefined labels, if not
-        match label {
-            Some(label) if !labels.contains(&label) => undefined_labels.push(label.clone()),
-            _ => {}
-        }
+        // Check if labels exist and add missing ones to the list of undefined labels
+        let mut refs = refs
+            .drain(..)
+            .filter(|label| !labels.contains(&label))
+            .collect();
+        undefined_labels.append(&mut refs)
     }
     if labels.len() > 40 {
         Err(ParserError::TooManyLabels)
