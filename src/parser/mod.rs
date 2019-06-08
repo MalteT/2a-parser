@@ -82,6 +82,10 @@ fn ignore<T>(_: T) -> () {
 impl AsmParser {
     /// Parse a valid Minirechner 2a assembly file.
     ///
+    /// # Checks
+    /// 1) **Syntax** Is it a valid file?
+    /// 2) **Labels** Are all used labels defined?
+    ///
     /// # Arguments
     /// - `input`: The [`str`] to parse.
     ///
@@ -97,6 +101,8 @@ impl AsmParser {
                 lines.push(parse_line(line));
             }
         }
+        // Do some checks
+        validate_lines(&lines)?;
         Ok(Asm { lines })
     }
 }
@@ -140,11 +146,59 @@ fn parse_line(line: Pair<Rule>) -> Line {
     }
     ret
 }
+/// Do some validity checking on the given lines.
+///
+/// # Checks
+/// - Undefined Labels
+/// TODO: Match Labels case insensitive
+fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
+    // Collect labels
+    let mut labels = vec![];
+    for line in lines {
+        match line {
+            Line::Label(label, _) => labels.push(label),
+            Line::Instruction(inst, _) => match inst {
+                Instruction::AsmEquals(label, _) => labels.push(label),
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+    // Check for undefined labels
+    let mut undefined_labels: Vec<String> = vec![];
+    for line in lines {
+        let label = match line {
+            Line::Instruction(inst, _) => match inst {
+                Instruction::Jmp(label) => Some(label),
+                Instruction::Jcs(label) => Some(label),
+                Instruction::Jcc(label) => Some(label),
+                Instruction::Jzs(label) => Some(label),
+                Instruction::Jzc(label) => Some(label),
+                Instruction::Jns(label) => Some(label),
+                Instruction::Jnc(label) => Some(label),
+                Instruction::Jr(label) => Some(label),
+                Instruction::Call(label) => Some(label),
+                _ => None,
+            },
+            _ => None,
+        };
+        // Check if label exists, add to the list of undefined labels, if not
+        match label {
+            Some(label) if !labels.contains(&label) => undefined_labels.push(label.clone()),
+            _ => {}
+        }
+    }
+    if undefined_labels.is_empty() {
+        Ok(())
+    } else {
+        Err(ParserError::UndefinedLabels(undefined_labels))
+    }
+}
 /// Parse a `label` rule into a [`Label`].
 fn parse_label(label: Pair<Rule>) -> Label {
     let (label, _) = inner_tuple! { label;
         raw_label => parse_raw_label;
-        colon => ignore
+        colon     => ignore
     };
     label
 }

@@ -7,8 +7,8 @@ use super::Rule;
 
 #[derive(Debug, Fail)]
 pub enum ParserError {
-    //#[fail(display = "failed to parse input \n{}", _0)]
     InvalidSyntax(#[fail(reason)] PestError<Rule>),
+    UndefinedLabels(Vec<String>),
 }
 
 macro_rules! map {
@@ -68,6 +68,7 @@ impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ParserError::InvalidSyntax(inner) => write!(f, "{}", inner),
+            ParserError::UndefinedLabels(labels) => write!(f, "Undefined Labels: {:#?}", labels),
         }
     }
 }
