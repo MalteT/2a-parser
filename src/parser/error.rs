@@ -53,6 +53,7 @@ impl From<PestError<Rule>> for ParserError {
         let e = map! { e;
             header => "All source files have to begin with '#! mrasm', followed by a newline";
             oparen => "Expected an openining parenthesis '('";
+            sep_pp => "Parameter need to be seperated like this: ', '";
             cparen => "Expected a closing parenthesis ')'";
             source => "Expected a general source (i.e. 'R0', '(R1+)', '((R0+))', '(LABEL)', '0x34', etc)";
             register => "Expected a register ('R0' - 'R3')";
