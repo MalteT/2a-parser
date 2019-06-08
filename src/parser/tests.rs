@@ -7,7 +7,7 @@ macro_rules! parse {
         let res = <AsmParser as Parser<Rule>>::parse($rule, $val);
         let s = format!("{} did not parse {}.", stringify!($rule), stringify!($val));
         match res {
-            Ok(_) => (),
+            Ok(ref r) => assert_eq!(r.as_str(), $val),
             Err(e) => panic!("{}\n{}", s, e),
         }
     };
@@ -27,10 +27,12 @@ macro_rules! parse_err {
         let s = format!("{} parsed {}.", stringify!($rule), stringify!($val));
         match res {
             Err(_) => (),
-            Ok(_) => panic!("{}\n{:#?}", s, res),
+            Ok(ref x) => assert_ne!($val, x.as_str(), "{}\n{:#?}", s, res),
         }
     };
 }
+
+// ======================================================================
 
 #[test]
 fn test_eol() {
