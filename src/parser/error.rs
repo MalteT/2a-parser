@@ -63,7 +63,9 @@ impl From<PestError<Rule>> for ParserError {
             register => "Expected a register ('R0' - 'R3')";
             constant => "Expected a number between 0 and 255. (i.e. '0xF0', '0b110', '13')";
             constant_bin => "Expected a binary number between 0 and 255. (i.e. '0b110')";
-            EOI, instruction, comment, label => "Typo in instruction? Or missing colon after label?"
+            EOI, instruction, comment, label => "Typo in instruction? Or missing colon after label?";
+            EOI, eol, semicolon, ws => "Expected comment or end of line. Too many arguments?"
+
         };
         ParserError::InvalidSyntax(e)
     }
