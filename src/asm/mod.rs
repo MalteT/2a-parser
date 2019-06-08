@@ -8,7 +8,7 @@ mod trait_impls;
 /// A single byte.
 /// Either given by a constant or a label.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Byte {
+pub enum Constant {
     Constant(u8),
     Label(Label),
 }
@@ -26,7 +26,7 @@ pub enum Word {
 pub enum Source {
     Register(Register),
     MemAddress(MemAddress),
-    Byte(Byte),
+    Constant(Constant),
     RegisterDI(RegisterDI),
     RegisterDDI(RegisterDDI),
 }
@@ -36,7 +36,7 @@ pub enum Source {
 pub enum Destination {
     Register(Register),
     MemAddress(MemAddress),
-    Byte(Byte),
+    Constant(Constant),
     RegisterDI(RegisterDI),
     RegisterDDI(RegisterDDI),
 }
@@ -82,8 +82,8 @@ pub enum Register {
 pub enum MemAddress {
     /// Dereferencing a label.
     Label(Label),
-    /// Dereferencing a byte.
-    Byte(Byte),
+    /// Dereferencing a constant.
+    Constant(Constant),
     /// Dereferencing a register.
     Register(Register),
 }
@@ -92,15 +92,15 @@ pub enum MemAddress {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Instruction {
     /// Set program origin.
-    AsmOrigin(Byte),
+    AsmOrigin(Constant),
     /// Define byte.
-    AsmByte(Byte),
+    AsmByte(Constant),
     /// Define multiple bytes.
-    AsmDefineBytes(Vec<Byte>),
+    AsmDefineBytes(Vec<Constant>),
     /// Define multiple words.
     AsmDefineWords(Vec<Word>),
-    /// Make label equivalent to byte.
-    AsmEquals(Label, Byte),
+    /// Make label equivalent to constant.
+    AsmEquals(Label, Constant),
     /// Define stacksize.
     AsmStacksize(Stacksize),
     /// Clear the register.
@@ -151,8 +151,8 @@ pub enum Instruction {
     Rlc(Register),
     /// Move source to destination. (copy)
     Mov(Destination, Source),
-    /// Load a byte into a register.
-    LdByte(Register, Byte),
+    /// Load a constant into a register.
+    LdConstant(Register, Constant),
     /// Load a byte from memory into a register.
     LdMemAddress(Register, MemAddress),
     /// Store a register in RAM.

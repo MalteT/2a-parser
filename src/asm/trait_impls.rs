@@ -1,8 +1,8 @@
 use super::*;
 
-impl From<u8> for Byte {
-    fn from(byte: u8) -> Self {
-        Byte::Constant(byte)
+impl From<u8> for Constant {
+    fn from(constant: u8) -> Self {
+        Constant::Constant(constant)
     }
 }
 
@@ -36,9 +36,9 @@ impl From<MemAddress> for Source {
     }
 }
 
-impl From<Byte> for Source {
-    fn from(byte: Byte) -> Self {
-        Source::Byte(byte)
+impl From<Constant> for Source {
+    fn from(constant: Constant) -> Self {
+        Source::Constant(constant)
     }
 }
 
@@ -66,9 +66,9 @@ impl From<MemAddress> for Destination {
     }
 }
 
-impl From<Byte> for Destination {
-    fn from(byte: Byte) -> Self {
-        Destination::Byte(byte)
+impl From<Constant> for Destination {
+    fn from(constant: Constant) -> Self {
+        Destination::Constant(constant)
     }
 }
 
@@ -90,9 +90,9 @@ impl From<RegisterDI> for RegisterDDI {
     }
 }
 
-impl From<Byte> for MemAddress {
-    fn from(byte: Byte) -> Self {
-        MemAddress::Byte(byte)
+impl From<Constant> for MemAddress {
+    fn from(constant: Constant) -> Self {
+        MemAddress::Constant(constant)
     }
 }
 

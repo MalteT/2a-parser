@@ -31,7 +31,7 @@ pub struct AsmParser;
 ///     sep_ip      => ignore;
 ///     raw_label   => parse_raw_label;
 ///     sep_pp      => ignore;
-///     constant    => parse_byte;
+///     constant    => parse_constant;
 /// };
 /// ```
 macro_rules! inner_tuple {
@@ -150,7 +150,8 @@ fn parse_line(line: Pair<Rule>) -> Line {
 ///
 /// # Checks
 /// - Undefined Labels
-/// TODO: Match Labels case insensitive
+/// TODO: Match Labels case insensitive?
+/// TODO: Labels can be referenced in far more locations, fix that
 fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     // Collect labels
     let mut labels = vec![];
@@ -169,14 +170,14 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     for line in lines {
         let label = match line {
             Line::Instruction(inst, _) => match inst {
-                Instruction::Jmp(label) => Some(label),
-                Instruction::Jcs(label) => Some(label),
-                Instruction::Jcc(label) => Some(label),
-                Instruction::Jzs(label) => Some(label),
-                Instruction::Jzc(label) => Some(label),
-                Instruction::Jns(label) => Some(label),
-                Instruction::Jnc(label) => Some(label),
-                Instruction::Jr(label) => Some(label),
+                Instruction::Jmp(label) |
+                Instruction::Jcs(label) |
+                Instruction::Jcc(label) |
+                Instruction::Jzs(label) |
+                Instruction::Jzc(label) |
+                Instruction::Jns(label) |
+                Instruction::Jnc(label) |
+                Instruction::Jr(label) |
                 Instruction::Call(label) => Some(label),
                 _ => None,
             },
@@ -275,30 +276,30 @@ fn parse_instruction(instruction: Pair<Rule>) -> Instruction {
 fn parse_instruction_org(org: Pair<Rule>) -> Instruction {
     let (_, constant) = inner_tuple! { org;
         sep_ip      => ignore;
-        constant    => parse_byte;
+        constant    => parse_constant;
     };
     Instruction::AsmOrigin(constant)
 }
-/// Parse a `constant` rule into a [`Byte`].
-fn parse_byte(constant: Pair<Rule>) -> Byte {
+/// Parse a `constant` rule into a [`Constant`].
+fn parse_constant(constant: Pair<Rule>) -> Constant {
     let inner = inner_tuple! { constant;
         constant_bin | constant_hex | constant_dec | raw_label => id;
     };
     match inner.as_rule() {
         Rule::constant_bin => u8::from_str_radix(&inner.as_str()[2..], 2)
-            .map(|nr| Byte::Constant(nr))
+            .map(|nr| Constant::Constant(nr))
             .unwrap(),
         Rule::constant_hex => u8::from_str_radix(&inner.as_str()[2..], 16)
-            .map(|nr| Byte::Constant(nr))
+            .map(|nr| Constant::Constant(nr))
             .unwrap(),
         Rule::constant_dec => u8::from_str_radix(&inner.as_str(), 10)
-            .map(|nr| Byte::Constant(nr))
+            .map(|nr| Constant::Constant(nr))
             .unwrap(),
-        Rule::raw_label => Byte::Label(parse_raw_label(inner)),
+        Rule::raw_label => Constant::Label(parse_raw_label(inner)),
         _ => unreachable!(),
     }
 }
-/// Parse a `constant` rule into a [`Byte`].
+/// Parse a `constant` rule into a [`Word`].
 fn parse_word(constant: Pair<Rule>) -> Word {
     let inner = inner_tuple! { constant;
         constant_bin | constant_hex | constant_dec | raw_label => id;
@@ -319,19 +320,19 @@ fn parse_word(constant: Pair<Rule>) -> Word {
 }
 /// Parse a `byte` rule into an [`Instruction`].
 fn parse_instruction_byte(byte: Pair<Rule>) -> Instruction {
-    let byte = inner_tuple! { byte;
-        constant => parse_byte;
+    let constant = inner_tuple! { byte;
+        constant => parse_constant;
     };
-    Instruction::AsmByte(byte)
+    Instruction::AsmByte(constant)
 }
 /// Parse a `db` rule into an [`Instruction`].
 fn parse_instruction_db(db: Pair<Rule>) -> Instruction {
     let results = db
         .into_inner()
         .filter(|pair| pair.as_rule() == Rule::constant)
-        .map(|byte| parse_byte(byte));
-    let bytes = results.collect();
-    Instruction::AsmDefineBytes(bytes)
+        .map(|constant| parse_constant(constant));
+    let constants = results.collect();
+    Instruction::AsmDefineBytes(constants)
 }
 /// Parse a `dw` rule into an [`Instruction`].
 fn parse_instruction_dw(dw: Pair<Rule>) -> Instruction {
@@ -348,7 +349,7 @@ fn parse_instruction_equ(equ: Pair<Rule>) -> Instruction {
         sep_ip      => ignore;
         raw_label   => parse_raw_label;
         sep_pp      => ignore;
-        constant    => parse_byte;
+        constant    => parse_constant;
     };
     Instruction::AsmEquals(label, constant)
 }
@@ -469,7 +470,7 @@ fn parse_source(source: Pair<Rule>) -> Source {
         Rule::registerdi => parse_register_di(inner).into(),
         Rule::registerddi => parse_register_ddi(inner).into(),
         Rule::memory => parse_memory(inner).into(),
-        Rule::constant => parse_byte(inner).into(),
+        Rule::constant => parse_constant(inner).into(),
         _ => unreachable!(),
     }
 }
@@ -500,7 +501,7 @@ fn parse_memory(memory: Pair<Rule>) -> MemAddress {
         cparen                                                  => ignore;
     };
     let memory = match inner.as_rule() {
-        Rule::constant => parse_byte(inner).into(),
+        Rule::constant => parse_constant(inner).into(),
         Rule::register => parse_register(inner).into(),
         Rule::raw_label => parse_raw_label(inner).into(),
         _ => unreachable!(),
@@ -574,7 +575,7 @@ fn parse_destination(destination: Pair<Rule>) -> Destination {
         Rule::registerdi => parse_register_di(inner).into(),
         Rule::registerddi => parse_register_ddi(inner).into(),
         Rule::memory => parse_memory(inner).into(),
-        Rule::constant => parse_byte(inner).into(),
+        Rule::constant => parse_constant(inner).into(),
         _ => unreachable!(),
     }
 }
@@ -668,13 +669,13 @@ fn parse_instruction_mov(mov: Pair<Rule>) -> Instruction {
 }
 /// Parse an `ld_const` rule into an [`Instruction`].
 fn parse_instruction_ld_const(ld_const: Pair<Rule>) -> Instruction {
-    let (_, reg, _, byte) = inner_tuple! { ld_const;
+    let (_, reg, _, constant) = inner_tuple! { ld_const;
         sep_ip      => ignore;
         register    => parse_register;
         sep_pp      => ignore;
-        constant    => parse_byte;
+        constant    => parse_constant;
     };
-    Instruction::LdByte(reg, byte)
+    Instruction::LdConstant(reg, constant)
 }
 /// Parse an `ld_memory` rule into an [`Instruction`].
 fn parse_instruction_ld_memory(ld_memory: Pair<Rule>) -> Instruction {
@@ -740,7 +741,6 @@ fn parse_instruction_ldfr(ldfr: Pair<Rule>) -> Instruction {
 fn parse_instruction_jmp(jmp: Pair<Rule>) -> Instruction {
     let (_, label) = inner_tuple! { jmp;
         sep_ip       => ignore;
-        // TODO: Is this right, or is a const allowed?
         raw_label => parse_raw_label;
     };
     Instruction::Jmp(label)
