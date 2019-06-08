@@ -2,8 +2,11 @@
 eol          = ${ NEWLINE }
 colon        = ${ ":" }
 semicolon    = ${ ";" }
-ws           = ${ (" " | "\t")+ }
-comma        = ${ ws? ~ "," ~ ws? }
+ws           = ${ (" " | "\t") }
+space        = ${ ws+ }
+comma        = ${ "," }
+sep_ip       = ${ ws+ }
+sep_pp       = ${ "," ~ ws* }
 
 oparen       = ${ "(" }
 cparen       = ${ ")" }
@@ -12,14 +15,13 @@ plus         = ${ "+" }
 constant_bin =  { "0b" ~ ("0"* ~ ASCII_BIN_DIGIT{1,8} | "0"+) }
 constant_hex =  { "0x" ~ ("0"* ~ ASCII_HEX_DIGIT{1,2} | "0"+) }
 constant_dec =  { ( "0"* ~ ( ( "2"      ~ "5"      ~ '0'..'5' ) |
-                             ( "2"      ~ '1'..'4' ~ '0'..'9' ) |
+                             ( "2"      ~ '0'..'4' ~ '0'..'9' ) |
                              ( "1"      ~ '0'..'9' ~ '0'..'9' ) |
                                         ( '1'..'9' ~ '0'..'9' ) |
                                                      '1'..'9'   ) ) | "0"+ }
 constant     =  { constant_bin | constant_hex | constant_dec | raw_label }
 rest         =  { ( !eol ~ ANY )* }
-// TODO: Specify label characters
-raw_label    =  { !( ^"R" | ^"PC" | ^"SP" ) ~ (ASCII_ALPHANUMERIC | "_")+ }
+raw_label    =  { !(^"R"|^"PC"|^"SP") ~ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 raw_stacksize=  { "16" | "32" | "48" | "64" | ^"NOSET" }
 register     =  { ( ^"R" ~ '0'..'3' ) | "PC" }
 registerdi   =  { oparen ~ register ~ plus ~ cparen }
@@ -29,68 +31,66 @@ source       =  { register | registerdi | registerddi | memory | constant }
 destination  =  { register | registerdi | registerddi | memory | constant }
 
 // Assembler operations
-org       =  { ^".ORG"       ~ ws ~ constant    }
-byte      =  { ^".BYTE"      ~ ws ~ constant    }
-db        =  { ^".DB"        ~ ws ~ constant    ~ ( comma ~ constant )*           }
-dw        =  { ^".DW"        ~ ws ~ constant    ~ ( comma ~ constant )*           }
-equ       =  { ^".EQU"       ~ ws ~ raw_label   ~ ws      ~ constant              }
-stacksize =  { ^"*STACKSIZE" ~ ws ~ raw_stacksize }
+org       =  { ^".ORG"       ~ sep_ip ~ constant      }
+byte      =  { ^".BYTE"      ~ sep_ip ~ constant      }
+db        =  { ^".DB"        ~ sep_ip ~ constant      ~ ( sep_pp ~ constant )*           }
+dw        =  { ^".DW"        ~ sep_ip ~ constant      ~ ( sep_pp ~ constant )*           }
+equ       =  { ^".EQU"       ~ sep_ip ~ raw_label     ~   sep_pp ~ constant              }
+stacksize =  { ^"*STACKSIZE" ~ sep_ip ~ raw_stacksize }
 
 // Arithmetic operations
-clr       =  { ^"CLR"        ~ ws ~ register    }
-add       =  { ^"ADD"        ~ ws ~ register    ~ comma   ~ register              }
-adc       =  { ^"ADC"        ~ ws ~ register    ~ comma   ~ register              }
-sub       =  { ^"SUB"        ~ ws ~ register    ~ comma   ~ register              }
-mul       =  { ^"MUL"        ~ ws ~ register    ~ comma   ~ register              }
-div       =  { ^"DIV"        ~ ws ~ register    ~ comma   ~ register              }
-inc       =  { ^"INC"        ~ ws ~ register    }
-dec       =  { ^"DEC"        ~ ws ~ source      }
-neg       =  { ^"NEG"        ~ ws ~ register    }
+clr       =  { ^"CLR"        ~ sep_ip ~ register    }
+add       =  { ^"ADD"        ~ sep_ip ~ register    ~ sep_pp ~ register              }
+adc       =  { ^"ADC"        ~ sep_ip ~ register    ~ sep_pp ~ register              }
+sub       =  { ^"SUB"        ~ sep_ip ~ register    ~ sep_pp ~ register              }
+mul       =  { ^"MUL"        ~ sep_ip ~ register    ~ sep_pp ~ register              }
+div       =  { ^"DIV"        ~ sep_ip ~ register    ~ sep_pp ~ register              }
+inc       =  { ^"INC"        ~ sep_ip ~ register    }
+dec       =  { ^"DEC"        ~ sep_ip ~ source      }
+neg       =  { ^"NEG"        ~ sep_ip ~ register    }
 
 // Logic operations
-and       =  { ^"AND"        ~ ws ~ register    ~ comma   ~ register              }
-or        =  { ^"OR"         ~ ws ~ register    ~ comma   ~ register              }
-xor       =  { ^"XOR"        ~ ws ~ register    ~ comma   ~ register              }
-com       =  { ^"COM"        ~ ws ~ register    }
-bits      =  { ^"BITS"       ~ ws ~ destination ~ comma   ~ source                }
-bitc      =  { ^"BITC"       ~ ws ~ destination ~ comma   ~ source                }
+and       =  { ^"AND"        ~ sep_ip ~ register    ~ sep_pp ~ register              }
+or        =  { ^"OR"         ~ sep_ip ~ register    ~ sep_pp ~ register              }
+xor       =  { ^"XOR"        ~ sep_ip ~ register    ~ sep_pp ~ register              }
+com       =  { ^"COM"        ~ sep_ip ~ register                                  }
+bits      =  { ^"BITS"       ~ sep_ip ~ destination ~ sep_pp ~ source                }
+bitc      =  { ^"BITC"       ~ sep_ip ~ destination ~ sep_pp ~ source                }
 
 // Test / Comparison operations
-tst       =  { ^"TST"        ~ ws ~ register    }
-cmp       =  { ^"CMP"        ~ ws ~ destination ~ comma   ~ source                }
-bitt      =  { ^"BITT"       ~ ws ~ destination ~ comma   ~ source                }
+tst       =  { ^"TST"        ~ sep_ip ~ register    }
+cmp       =  { ^"CMP"        ~ sep_ip ~ destination ~ sep_pp   ~ source                }
+bitt      =  { ^"BITT"       ~ sep_ip ~ destination ~ sep_pp   ~ source                }
 
 // Bit-Shift operations
-lsr       =  { ^"LSR"        ~ ws ~ register    }
-asr       =  { ^"ASR"        ~ ws ~ register    }
-lsl       =  { ^"LSL"        ~ ws ~ register    }
-rrc       =  { ^"RRC"        ~ ws ~ register    }
-rlc       =  { ^"RLC"        ~ ws ~ register    }
+lsr       =  { ^"LSR"        ~ sep_ip ~ register    }
+asr       =  { ^"ASR"        ~ sep_ip ~ register    }
+lsl       =  { ^"LSL"        ~ sep_ip ~ register    }
+rrc       =  { ^"RRC"        ~ sep_ip ~ register    }
+rlc       =  { ^"RLC"        ~ sep_ip ~ register    }
 
 // Data-Copying operations
-mov       =  { ^"MOV"        ~ ws ~ destination ~ comma   ~ source                }
-ld_const  =  { ^"LD"         ~ ws ~ register    ~ comma   ~ constant              }
-ld_memory =  { ^"LD"         ~ ws ~ register    ~ comma   ~ memory                }
-st        =  { ^"ST"         ~ ws ~ memory      ~ comma   ~ register              }
-push      =  { ^"PUSH"       ~ ws ~ register    }
-pop       =  { ^"POP"        ~ ws ~ register    }
+mov       =  { ^"MOV"        ~ sep_ip ~ destination ~ sep_pp   ~ source                }
+ld_const  =  { ^"LD"         ~ sep_ip ~ register    ~ sep_pp   ~ constant              }
+ld_memory =  { ^"LD"         ~ sep_ip ~ register    ~ sep_pp   ~ memory                }
+st        =  { ^"ST"         ~ sep_ip ~ memory      ~ sep_pp   ~ register              }
+push      =  { ^"PUSH"       ~ sep_ip ~ register    }
+pop       =  { ^"POP"        ~ sep_ip ~ register    }
 pushf     =  { ^"PUSHF"      }
 popf      =  { ^"POPF"       }
-ldsp      =  { ^"LDSP"       ~ ws ~ source      }
-ldfr      =  { ^"LDFR"       ~ ws ~ source      }
+ldsp      =  { ^"LDSP"       ~ sep_ip ~ source      }
+ldfr      =  { ^"LDFR"       ~ sep_ip ~ source      }
 
 // Decision-Making operations
-// TODO: JMP (???) / JMP ??? which is legit?
-// TODO: Is it allowed to "JMP 55"?
-jmp       =  { ^"JMP"        ~ ws ~ raw_label   }
-jcs       =  { ^"JCS"        ~ ws ~ raw_label   }
-jcc       =  { ^"JCC"        ~ ws ~ raw_label   }
-jzs       =  { ^"JZS"        ~ ws ~ raw_label   }
-jzc       =  { ^"JZC"        ~ ws ~ raw_label   }
-jns       =  { ^"JNS"        ~ ws ~ raw_label   }
-jnc       =  { ^"JNC"        ~ ws ~ raw_label   }
-jr        =  { ^"JR"         ~ ws ~ raw_label   }
-call      =  { ^"CALL"       ~ ws ~ raw_label   }
+jmp       =  { ^"JMP"        ~ sep_ip ~ raw_label   }
+jcs       =  { ^"JCS"        ~ sep_ip ~ raw_label   }
+jcc       =  { ^"JCC"        ~ sep_ip ~ raw_label   }
+jzs       =  { ^"JZS"        ~ sep_ip ~ raw_label   }
+jzc       =  { ^"JZC"        ~ sep_ip ~ raw_label   }
+jns       =  { ^"JNS"        ~ sep_ip ~ raw_label   }
+jnc       =  { ^"JNC"        ~ sep_ip ~ raw_label   }
+jr        =  { ^"JR"         ~ sep_ip ~ raw_label   }
+call      =  { ^"CALL"       ~ sep_ip ~ raw_label   }
 ret       =  { ^"RET"        }
 reti      =  { ^"RETI"       }
 stop      =  { ^"STOP"       }
@@ -114,6 +114,6 @@ label        =  { raw_label ~ colon }
 header       =  { "#! mrasm" ~ ws? ~ comment? ~ (eol | EOI) }
 
 
-line         =  { ws? ~ (label | instruction)? ~ ws? ~ comment? }
+line         =  { space? ~ (label | instruction)? ~ space? ~ comment? }
 
 file         = _{ SOI ~ header ~ (line ~ eol)* ~ line ~ EOI }
