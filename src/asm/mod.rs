@@ -216,3 +216,14 @@ pub enum Line {
 pub struct Asm {
     pub lines: Vec<Line>,
 }
+
+impl From<Register> for u8 {
+    fn from(reg: Register) -> Self {
+        match reg {
+            Register::R0 => 0,
+            Register::R1 => 1,
+            Register::R2 => 2,
+            Register::R3 => 3,
+        }
+    }
+}
