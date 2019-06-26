@@ -8,11 +8,11 @@ use super::*;
 const COMMENT_WIDTH: usize = 30;
 const INST_WIDTH: usize = 4;
 
-impl fmt::Display for Byte {
+impl fmt::Display for Constant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Byte::Constant(nr) => write!(f, "{:>02X}", nr),
-            Byte::Label(label) => write!(f, "{}", label),
+            Constant::Constant(c) => write!(f, "{:>02X}", c),
+            Constant::Label(label) => write!(f, "{}", label),
         }
     }
 }
@@ -58,7 +58,7 @@ impl fmt::Display for MemAddress {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             MemAddress::Label(label) => write!(f, "({})", label),
-            MemAddress::Byte(byte) => write!(f, "({})", byte),
+            MemAddress::Constant(c) => write!(f, "({})", c),
             MemAddress::Register(reg) => write!(f, "({})", reg),
         }
     }
@@ -111,7 +111,7 @@ impl fmt::Display for Instruction {
             Instruction::Rrc(reg) => write!(f, "RRC {}", reg),
             Instruction::Rlc(reg) => write!(f, "RLC {}", reg),
             Instruction::Mov(dst, src) => write!(f, "MOV {}, {}", dst, src),
-            Instruction::LdByte(reg, byte) => write!(f, "LD {}, {}", reg, byte),
+            Instruction::LdConstant(reg, c) => write!(f, "LD {}, {}", reg, c),
             Instruction::LdMemAddress(reg, mem) => write!(f, "LD {}, {}", reg, mem),
             Instruction::St(mem, reg) => write!(f, "ST {}, {}", mem, reg),
             Instruction::Push(reg) => write!(f, "PUSH {}", reg),
@@ -144,7 +144,7 @@ impl fmt::Display for Source {
         match self {
             Source::Register(reg) => write!(f, "{}", reg),
             Source::MemAddress(mem) => write!(f, "{}", mem),
-            Source::Byte(byte) => write!(f, "{}", byte),
+            Source::Constant(c) => write!(f, "{}", c),
             Source::RegisterDI(reg) => write!(f, "{}", reg),
             Source::RegisterDDI(reg) => write!(f, "{}", reg),
         }
@@ -156,7 +156,7 @@ impl fmt::Display for Destination {
         match self {
             Destination::Register(reg) => write!(f, "{}", reg),
             Destination::MemAddress(mem) => write!(f, "{}", mem),
-            Destination::Byte(byte) => write!(f, "{}", byte),
+            Destination::Constant(c) => write!(f, "{}", c),
             Destination::RegisterDI(reg) => write!(f, "{}", reg),
             Destination::RegisterDDI(reg) => write!(f, "{}", reg),
         }
