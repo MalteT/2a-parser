@@ -217,10 +217,10 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
                     .flatten()
                     .collect(),
                 Instruction::LdMemAddress(_, mem) | Instruction::St(mem, _) => mem_to_vec(mem),
-                Instruction::Dec(src)
-                | Instruction::Ldsp(src)
-                | Instruction::Ldfr(src) => src_to_vec(src),
-                | Instruction::Bits(dst, src)
+                Instruction::Dec(src) | Instruction::Ldsp(src) | Instruction::Ldfr(src) => {
+                    src_to_vec(src)
+                }
+                Instruction::Bits(dst, src)
                 | Instruction::Bitc(dst, src)
                 | Instruction::Cmp(dst, src)
                 | Instruction::Bitt(dst, src)
