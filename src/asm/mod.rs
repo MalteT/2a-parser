@@ -117,7 +117,7 @@ pub enum Instruction {
     Div(Register, Register),
     /// Increase the register by 1.
     Inc(Register),
-    /// Decrease the register by 1.
+    /// Decrease the source by 1.
     Dec(Source),
     /// Negate a register. (twos complement)
     Neg(Register),
