@@ -43,11 +43,11 @@ pub enum Destination {
 
 /// A dereferenced, post-incremented register.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct RegisterDI(Register);
+pub struct RegisterDI(pub Register);
 
 /// A double dereferenced, post-incremented register.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct RegisterDDI(Register);
+pub struct RegisterDDI(pub Register);
 
 /// The different stack sizes the Stack may have.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
