@@ -1,6 +1,6 @@
 [package]
 name = "mr2a_asm_parser"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Malte Tammena <malte.tammena@gmx.de>"]
 edition = "2018"
 
