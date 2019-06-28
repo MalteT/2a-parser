@@ -18,7 +18,11 @@ fn run() -> Return {
             Ok(content) => {
                 let parsed = AsmParser::parse(&content);
                 match parsed {
-                    Ok(_) => ret = Return::Valid,
+                    Ok(asm) => {
+                        #[cfg(feature = "formatting")]
+                        println!("{}", asm);
+                        ret = Return::Valid;
+                    }
                     Err(e) => {
                         eprintln!("\n--> {}:", arg);
                         eprintln!("{}\n", e);

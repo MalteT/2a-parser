@@ -183,31 +183,33 @@ impl fmt::Display for Line {
                 write!(f, "{}", comment.dimmed())
             }
             Line::Empty(None) => write!(f, ""),
-            Line::Label(label, Some(comment)) => {
-                let out = format!("{}:", label);
-                let comment = format!("; {}", comment);
-                write!(f, "{}{}", out.pad_to_width(COMMENT_WIDTH), comment.dimmed())
+            Line::Label(label, comment) => {
+                let out = format!("{}:", label).pad_to_width(COMMENT_WIDTH).magenta();
+                write!(f, "{}", out)?;
+                if let Some(comment) = comment {
+                    let comment = format!("; {}", comment).dimmed();
+                    write!(f, "{}", comment)?;
+                }
+                Ok(())
             }
-            Line::Label(label, None) => write!(f, "{}:", label),
-            Line::Instruction(inst, Some(comment)) => {
-                let inst = format!("{}", inst);
-                let comment = format!("; {}", comment);
-                write!(
-                    f,
-                    "{}{}{}",
-                    "".pad_to_width(INST_WIDTH),
-                    inst.pad_to_width(COMMENT_WIDTH - INST_WIDTH),
-                    comment.dimmed()
-                )
+            Line::Instruction(inst, comment) => {
+                let prefix = format!("{}", "".pad_to_width(INST_WIDTH));
+                let inst = format!("{}", inst).pad_to_width(COMMENT_WIDTH - INST_WIDTH);
+                write!(f, "{}{}", prefix, inst)?;
+                if let Some(comment) = comment {
+                    let comment = format!("; {}", comment).dimmed();
+                    write!(f, "{}", comment)?;
+                }
+                Ok(())
             }
-            Line::Instruction(inst, None) => write!(f, "{}", inst),
         }
     }
 }
 
 impl fmt::Display for Asm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "#! mrasm\n")?;
+        let header = "#! mrasm\n".dimmed();
+        write!(f, "{}", header)?;
         for line in &self.lines {
             writeln!(f, "{}", line)?;
         }
