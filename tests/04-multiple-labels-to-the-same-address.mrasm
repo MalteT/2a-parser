@@ -6,3 +6,5 @@ LOOP:
     INC R0
     JZS LOOP
     JR FIRST_LINE
+
+; Did work
