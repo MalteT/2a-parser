@@ -44,6 +44,6 @@ $ cargo build --release --locked --features formatting --bin asm_parser_bin
 or use one of the [precompiled binaries](https://v4.git.tammena.rocks/2a-emulator/asm-parser/releases). The `--features formatting` can be left out to disable AWESOME auto formatting and pretty printing of the checked source code.
 
 Test a programs syntax: (The binaries should be inside `target` if you used the above command).
-```
+```console
 $ ./asm_parser_bin FILE
 ```
