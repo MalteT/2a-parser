@@ -210,7 +210,6 @@ impl fmt::Display for Asm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let header = "#! mrasm".pad_to_width(COMMENT_WIDTH);
         if let Some(comment) = &self.comment_after_shebang {
-            let comment = self.comment_after_shebang.as_ref().unwrap();
             let line = format!("{}; {}", header, comment).dimmed();
             writeln!(f, "{}", line)?;
         } else {
