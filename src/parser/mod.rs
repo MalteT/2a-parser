@@ -94,16 +94,25 @@ impl AsmParser {
     /// - a [`ParserError`]
     pub fn parse(input: &str) -> ParseResult<Asm> {
         let mut lines = vec![];
-        let parsed = <Self as Parser<Rule>>::parse(Rule::file, input)?;
+        let mut parsed = <Self as Parser<Rule>>::parse(Rule::file, input)?;
+        // Get the header of the asm file
+        let header = parsed.next().expect("Infallible: Header must exist");
+        // Extract the optional comment from the header file
+        let mut comment_after_shebang = None;
+        for el in header.into_inner() {
+            if el.as_rule() == Rule::comment {
+                comment_after_shebang = Some(parse_comment(el));
+            }
+        }
         // iterate over lines, skipping the header
-        for line in parsed.skip(1) {
+        for line in parsed {
             if line.as_rule() == Rule::line {
                 lines.push(parse_line(line));
             }
         }
         // Do some checks
         validate_lines(&lines)?;
-        Ok(Asm { lines })
+        Ok(Asm { lines, comment_after_shebang })
     }
 }
 /// Parse an assembler instruction line into a valid type.

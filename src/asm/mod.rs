@@ -214,5 +214,6 @@ pub enum Line {
 /// Represenation of a Minirechner2a ASM program.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Asm {
+    pub comment_after_shebang: Option<Comment>,
     pub lines: Vec<Line>,
 }
