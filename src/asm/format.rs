@@ -11,7 +11,7 @@ const INST_WIDTH: usize = 4;
 impl fmt::Display for Constant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Constant::Constant(c) => write!(f, "{:>02X}", c),
+            Constant::Constant(c) => write!(f, "0x{:>02X}", c),
             Constant::Label(label) => write!(f, "{}", label),
         }
     }
@@ -20,7 +20,7 @@ impl fmt::Display for Constant {
 impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Word::Constant(nr) => write!(f, "{:>04X}", nr),
+            Word::Constant(nr) => write!(f, "0x{:>04X}", nr),
             Word::Label(label) => write!(f, "{}", label),
         }
         .into()
@@ -241,10 +241,10 @@ mod test {
     }
 
     #[test]
-    fn test_display_byte() {
-        s!(Byte::Constant(16), "0x10");
-        s!(Byte::Constant(255), "0xFF");
-        s!(Byte::Constant(15), "0x0F");
+    fn test_display_constant() {
+        s!(Constant::Constant(16), "0x10");
+        s!(Constant::Constant(255), "0xFF");
+        s!(Constant::Constant(15), "0x0F");
     }
 
     #[test]
@@ -268,17 +268,17 @@ mod test {
     fn test_display_memaddress() {
         s!(MemAddress::Label("label".to_string()), "(label)");
         s!(MemAddress::Label("TEST".to_string()), "(TEST)");
-        s!(MemAddress::Byte(0xff.into()), "(0xFF)");
-        s!(MemAddress::Byte(10.into()), "(0x0A)");
+        s!(MemAddress::Constant(0xff.into()), "(0xFF)");
+        s!(MemAddress::Constant(10.into()), "(0x0A)");
     }
 
     #[test]
     fn test_display_instruction() {
         s!(Instruction::AsmOrigin(17.into()), ".ORG 0x11");
-        s!(Instruction::AsmByte(0x0A.into()), ".BYTE\t0x0A");
+        s!(Instruction::AsmByte(0x0A.into()), ".BYTE 0x0A");
         s!(
             Instruction::AsmDefineBytes(vec![0.into(), 255.into(), 33.into(), 1.into()]),
-            ".DB\t0x00, 0xFF, 0x21, 0x01"
+            ".DB 0x00, 0xFF, 0x21, 0x01"
         );
         s!(
             Instruction::AsmDefineWords(vec![
@@ -287,27 +287,27 @@ mod test {
                 33.into(),
                 (0x1000).into()
             ]),
-            ".DW\t0x0000, 0xFE01, 0x0021, 0x1000"
+            ".DW 0x0000, 0xFE01, 0x0021, 0x1000"
         );
         s!(
             Instruction::AsmEquals("label".into(), 0xf1.into()),
-            ".EQU\tlabel\t0xF1"
+            ".EQU label 0xF1"
         );
-        s!(Instruction::AsmStacksize(Stacksize::_32), "*STACKSIZE\t32");
+        s!(Instruction::AsmStacksize(Stacksize::_32), "*STACKSIZE 32");
         s!(
             Instruction::AsmStacksize(Stacksize::NotSet),
-            "*STACKSIZE\tNOSET"
+            "*STACKSIZE NOSET"
         );
-        s!(Instruction::Clr(Register::R3), "CLR\tR3");
-        s!(Instruction::Inc(Register::R2), "INC\tR2");
+        s!(Instruction::Clr(Register::R3), "CLR R3");
+        s!(Instruction::Inc(Register::R2), "INC R2");
         s!(
             Instruction::St(MemAddress::Label("test".into()), Register::R0),
-            "ST\t(test),\tR0"
+            "ST (test), R0"
         );
         s!(
-            Instruction::St(MemAddress::Byte(0x03.into()), Register::R1),
-            "ST\t(0x03),\tR1"
+            Instruction::St(MemAddress::Constant(0x03.into()), Register::R1),
+            "ST (0x03), R1"
         );
-        s!(Instruction::Jr("ReL".into()), "JR\tReL");
+        s!(Instruction::Jr("ReL".into()), "JR ReL");
     }
 }
