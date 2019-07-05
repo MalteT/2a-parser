@@ -33,10 +33,25 @@ macro_rules! map {
                                 }
                             }
                             if contains_all {
-                                return format!("{:?}\n  => {}", positives, $str);
+                                return format!("{}", $str);
                             }
                         )*
-                        format!("Did not match these: {:?}", positives)
+                        // If nothing matched, return a default string
+                        let mut s = String::from("Expected ");
+                        let positives = positives.clone();
+                        if let Some(first_pos) = positives.first() {
+                            s += &format!("{}", first_pos);
+                        }
+                        if positives.len() > 2 {
+                            for pos in &positives[1..positives.len() - 1] {
+                                s += &format!(", {}", pos.to_string());
+                            }
+                        }
+                        if positives.len() > 1 {
+                            let last_pos = positives.last().unwrap();
+                            s += &format!(" or {}", last_pos.to_string());
+                        }
+                        s
                     },
                     EV::CustomError{ message } => return message.clone(),
                 }
@@ -47,6 +62,100 @@ macro_rules! map {
             e.variant = variant;
             e
         }
+    }
+}
+
+impl fmt::Display for Rule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Rule::*;
+        let s = match self {
+            EOI => "nothing",
+            eol => "end of line",
+            colon => "':'",
+            semicolon => ";",
+            ws => "a tab or space",
+            space => "tabs or spaces",
+            comma => "','",
+            sep_ip => "tabs or spaces",
+            sep_pp => "', '",
+            oparen => "'('",
+            cparen => "')'",
+            plus => "'+'",
+            constant_bin => "a binary constant",
+            constant_hex => "a hex constant",
+            constant_dec => "a constant",
+            constant => "a constant",
+            rest => "anything",
+            raw_label => "a label",
+            raw_stacksize => "16|32|48|64|NOSET",
+            register => "a register",
+            registerdi => "'(Rs+)'",
+            registerddi => "'((Rs+))'",
+            memory => "'(const)|(Rs)|(label)'",
+            source => "'Rs|(Rs)|(Rs+)|((Rs+))|(adr)|const'",
+            destination => "'Rs|(Rs)|(Rs+)|((Rs+))|(adr)'",
+            org => ".ORG",
+            byte => ".BYTE",
+            db => ".DB",
+            dw => ".DW",
+            equ => ".EQU",
+            stacksize => "*STACKSIZE",
+            clr => "CLR",
+            add => "ADD",
+            adc => "ADC",
+            sub => "SUB",
+            mul => "MUL",
+            div => "DIV",
+            inc => "INC",
+            dec => "DEC",
+            neg => "NEG",
+            and => "AND",
+            or => "OR",
+            xor => "XOR",
+            com => "COM",
+            bits => "BITS",
+            bitc => "BITC",
+            tst => "TST",
+            cmp => "CMP",
+            bitt => "BITT",
+            lsr => "LSR",
+            asr => "ASR",
+            lsl => "LSL",
+            rrc => "RRC",
+            rlc => "RLC",
+            mov => "MOV",
+            ld_const => "LD",
+            ld_memory => "LD",
+            st => "ST",
+            push => "PUSH",
+            pop => "POP",
+            pushf => "PUSHF",
+            popf => "POP",
+            ldsp => "LDSP",
+            ldfr => "LDFR",
+            jmp => "JMP",
+            jcs => "JCS",
+            jcc => "JCC",
+            jzs => "JZS",
+            jzc => "JZC",
+            jns => "JNS",
+            jnc => "JNC",
+            jr => "JR",
+            call => "CALL",
+            ret => "RET",
+            reti => "RETI",
+            stop => "STOP",
+            nop => "NOP",
+            ei => "EI",
+            di => "DI",
+            instruction => "any instruction",
+            comment => "a comment",
+            label => "a label definition",
+            header => "'#! mrasm'",
+            line => "a comment, a label definition, any instruction",
+            file => "an asm program",
+        };
+        write!(f, "{}", s)
     }
 }
 

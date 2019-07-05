@@ -112,7 +112,10 @@ impl AsmParser {
         }
         // Do some checks
         validate_lines(&lines)?;
-        Ok(Asm { lines, comment_after_shebang })
+        Ok(Asm {
+            lines,
+            comment_after_shebang,
+        })
     }
 }
 /// Parse an assembler instruction line into a valid type.
@@ -566,7 +569,7 @@ fn parse_memory(memory: Pair<Rule>) -> MemAddress {
         Rule::raw_label => {
             let constant: Constant = parse_raw_label(inner).into();
             constant.into()
-        },
+        }
         _ => unreachable!(),
     };
     memory

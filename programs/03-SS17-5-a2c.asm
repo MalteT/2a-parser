@@ -26,8 +26,6 @@ DRINN:
   MOV (0xFF), 0
   JR MAIN
 
-
-
 ;;; Subroutine:
 ;;; Ermittle mittels sukzessiver Approximation
 ;;; die Spannung am Temperatursensor.
