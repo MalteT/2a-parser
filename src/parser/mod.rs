@@ -194,7 +194,6 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     // Function to map a Destination to a vec of labels
     let dst_to_vec = |dst: &Destination| match dst {
         Destination::MemAddress(mem) => mem_to_vec(mem),
-        Destination::Constant(c) => const_to_vec(c),
         _ => vec![],
     };
     for line in lines {
@@ -639,7 +638,6 @@ fn parse_destination(destination: Pair<Rule>) -> Destination {
         Rule::registerdi => parse_register_di(inner).into(),
         Rule::registerddi => parse_register_ddi(inner).into(),
         Rule::memory => parse_memory(inner).into(),
-        Rule::constant => parse_constant(inner).into(),
         _ => unreachable!(),
     }
 }

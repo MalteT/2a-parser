@@ -72,12 +72,6 @@ impl From<MemAddress> for Destination {
     }
 }
 
-impl From<Constant> for Destination {
-    fn from(constant: Constant) -> Self {
-        Destination::Constant(constant)
-    }
-}
-
 impl From<Register> for RegisterDI {
     fn from(register: Register) -> Self {
         RegisterDI(register)

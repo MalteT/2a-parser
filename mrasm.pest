@@ -28,7 +28,7 @@ registerdi   =  { oparen ~ register ~ plus ~ cparen }
 registerddi  =  { oparen ~ registerdi ~ cparen }
 memory       =  { oparen ~ (constant | register | raw_label) ~ cparen }
 source       =  { register | registerdi | registerddi | memory | constant }
-destination  =  { register | registerdi | registerddi | memory | constant }
+destination  =  { register | registerdi | registerddi | memory }
 
 // Assembler operations
 org       =  { ^".ORG"       ~ sep_ip ~ constant      }

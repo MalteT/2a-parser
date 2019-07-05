@@ -155,7 +155,6 @@ impl fmt::Display for Destination {
         match self {
             Destination::Register(reg) => write!(f, "{}", reg),
             Destination::MemAddress(mem) => write!(f, "{}", mem),
-            Destination::Constant(c) => write!(f, "{}", c),
             Destination::RegisterDI(reg) => write!(f, "{}", reg),
             Destination::RegisterDDI(reg) => write!(f, "{}", reg),
         }

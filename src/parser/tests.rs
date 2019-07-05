@@ -268,7 +268,7 @@ fn test_destination() {
     parse!(destination, "(R2+)");
     parse!(destination, "((R2+))");
     parse!(destination, "(_uncool)");
-    parse!(destination, "13");
+    parse_err!(destination, "13");
 }
 
 // ======================================================================

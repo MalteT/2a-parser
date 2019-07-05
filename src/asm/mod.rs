@@ -36,7 +36,6 @@ pub enum Source {
 pub enum Destination {
     Register(Register),
     MemAddress(MemAddress),
-    Constant(Constant),
     RegisterDI(RegisterDI),
     RegisterDDI(RegisterDDI),
 }
