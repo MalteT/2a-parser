@@ -80,8 +80,6 @@ pub enum Register {
 /// Memory address.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MemAddress {
-    /// Dereferencing a label.
-    Label(Label),
     /// Dereferencing a constant.
     Constant(Constant),
     /// Dereferencing a register.

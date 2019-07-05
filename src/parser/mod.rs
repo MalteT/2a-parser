@@ -183,7 +183,6 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     // Function to map a Memory to a vec of labels
     let mem_to_vec = |c: &MemAddress| match c {
         MemAddress::Constant(c) => const_to_vec(&c),
-        MemAddress::Label(label) => vec![label.clone()],
         MemAddress::Register(_) => vec![],
     };
     // Function to map a Source to a vec of labels
@@ -565,7 +564,10 @@ fn parse_memory(memory: Pair<Rule>) -> MemAddress {
     let memory = match inner.as_rule() {
         Rule::constant => parse_constant(inner).into(),
         Rule::register => parse_register(inner).into(),
-        Rule::raw_label => parse_raw_label(inner).into(),
+        Rule::raw_label => {
+            let constant: Constant = parse_raw_label(inner).into();
+            constant.into()
+        },
         _ => unreachable!(),
     };
     memory

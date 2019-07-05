@@ -6,6 +6,12 @@ impl From<u8> for Constant {
     }
 }
 
+impl From<Label> for Constant {
+    fn from(label: Label) -> Self {
+        Constant::Label(label)
+    }
+}
+
 impl From<u16> for Word {
     fn from(word: u16) -> Self {
         Word::Constant(word)
@@ -99,12 +105,6 @@ impl From<Constant> for MemAddress {
 impl From<Register> for MemAddress {
     fn from(register: Register) -> Self {
         MemAddress::Register(register)
-    }
-}
-
-impl From<Label> for MemAddress {
-    fn from(label: Label) -> Self {
-        MemAddress::Label(label)
     }
 }
 

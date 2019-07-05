@@ -57,7 +57,6 @@ impl fmt::Display for Register {
 impl fmt::Display for MemAddress {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            MemAddress::Label(label) => write!(f, "({})", label),
             MemAddress::Constant(c) => write!(f, "({})", c),
             MemAddress::Register(reg) => write!(f, "({})", reg),
         }
@@ -265,8 +264,6 @@ mod test {
 
     #[test]
     fn test_display_memaddress() {
-        s!(MemAddress::Label("label".to_string()), "(label)");
-        s!(MemAddress::Label("TEST".to_string()), "(TEST)");
         s!(MemAddress::Constant(0xff.into()), "(0xFF)");
         s!(MemAddress::Constant(10.into()), "(0x0A)");
     }
@@ -299,10 +296,6 @@ mod test {
         );
         s!(Instruction::Clr(Register::R3), "CLR R3");
         s!(Instruction::Inc(Register::R2), "INC R2");
-        s!(
-            Instruction::St(MemAddress::Label("test".into()), Register::R0),
-            "ST (test), R0"
-        );
         s!(
             Instruction::St(MemAddress::Constant(0x03.into()), Register::R1),
             "ST (0x03), R1"
