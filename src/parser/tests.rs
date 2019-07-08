@@ -165,6 +165,49 @@ fn test_constant() {
 }
 
 #[test]
+fn test_word_bin() {
+    use Rule::word_bin;
+    parse!(word_bin, "0b000000000000000000");
+    parse!(word_bin, "0b0");
+    parse!(word_bin, "0b1111111111111111");
+    parse_err!(word_bin, "");
+    parse_err!(word_bin, "0b");
+    parse_err!(word_bin, "0b11111111111111111");
+}
+
+#[test]
+fn test_word_hex() {
+    use Rule::word_hex;
+    parse!(word_hex, "0x00000000");
+    parse!(word_hex, "0xFFFE");
+    parse_err!(word_hex, "");
+    parse_err!(word_hex, "0x");
+    parse_err!(word_hex, "0x0000011111");
+}
+
+#[test]
+fn test_word_dec() {
+    use Rule::word_dec;
+    for i in 0..65536 {
+        let x = format!("0000{}", i);
+        parse!(word_dec, &x);
+    }
+    for i in 65536..1_000_000 {
+        let x = format!("{}", i);
+        parse_err!(word_dec, &x);
+    }
+}
+
+#[test]
+fn test_word() {
+    use Rule::word;
+    parse!(word, "0xFFFE");
+    parse!(word, "0b1111111111111110");
+    parse!(word, "65535");
+    parse!(word, "label");
+}
+
+#[test]
 fn test_rest() {
     use Rule::rest;
     parse!(rest, "sdlkfj sldkj3k j23lk4 j2l3kj szx/c.,76%&^%()");

@@ -162,6 +162,7 @@ fn parse_line(line: Pair<Rule>) -> Line {
 ///
 /// # Checks
 /// - Undefined Labels
+/// - Too many Labels
 fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     // Collect labels
     let mut labels = vec![];
@@ -362,16 +363,16 @@ fn parse_constant(constant: Pair<Rule>) -> Constant {
 /// Parse a `constant` rule into a [`Word`].
 fn parse_word(constant: Pair<Rule>) -> Word {
     let inner = inner_tuple! { constant;
-        constant_bin | constant_hex | constant_dec | raw_label => id;
+        word_bin | word_hex | word_dec | raw_label => id;
     };
     match inner.as_rule() {
-        Rule::constant_bin => u16::from_str_radix(&inner.as_str()[1..], 2)
+        Rule::word_bin => u16::from_str_radix(&inner.as_str()[1..], 2)
             .map(|nr| Word::Constant(nr))
             .unwrap(),
-        Rule::constant_hex => u16::from_str_radix(&inner.as_str()[1..], 16)
+        Rule::word_hex => u16::from_str_radix(&inner.as_str()[1..], 16)
             .map(|nr| Word::Constant(nr))
             .unwrap(),
-        Rule::constant_dec => u16::from_str_radix(&inner.as_str(), 10)
+        Rule::word_dec => u16::from_str_radix(&inner.as_str(), 10)
             .map(|nr| Word::Constant(nr))
             .unwrap(),
         Rule::raw_label => Word::Label(parse_raw_label(inner)),
@@ -404,7 +405,7 @@ fn parse_instruction_db(db: Pair<Rule>) -> Instruction {
 fn parse_instruction_dw(dw: Pair<Rule>) -> Instruction {
     let results = dw
         .into_inner()
-        .filter(|pair| pair.as_rule() == Rule::constant)
+        .filter(|pair| pair.as_rule() == Rule::word)
         .map(|word| parse_word(word));
     let words = results.collect();
     Instruction::AsmDefineWords(words)

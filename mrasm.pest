@@ -12,6 +12,7 @@ oparen       = ${ "(" }
 cparen       = ${ ")" }
 plus         = ${ "+" }
 
+// These constants are very explicit to match only 0 - 255
 constant_bin =  { "0b" ~ ("0"* ~ ASCII_BIN_DIGIT{1,8} | "0"+) }
 constant_hex =  { "0x" ~ ("0"* ~ ASCII_HEX_DIGIT{1,2} | "0"+) }
 constant_dec =  { ( "0"* ~ ( ( "2"      ~ "5"      ~ '0'..'5' ) |
@@ -20,6 +21,20 @@ constant_dec =  { ( "0"* ~ ( ( "2"      ~ "5"      ~ '0'..'5' ) |
                                         ( '1'..'9' ~ '0'..'9' ) |
                                                      '1'..'9'   ) ) | "0"+ }
 constant     =  { constant_bin | constant_hex | constant_dec | raw_label }
+// Same with the words but for range 0 - 65536
+word_bin =  { "0b" ~ ("0"* ~ ASCII_BIN_DIGIT{1,16} | "0"+) }
+word_hex =  { "0x" ~ ("0"* ~ ASCII_HEX_DIGIT{1,4} | "0"+) }
+word_dec =  { ( "0"* ~ ( ( "6553"                                    ~ '0'..'5' ) |
+                         ( "655"                          ~ '0'..'2' ~ '0'..'9' ) |
+                         ( "65"                ~ '0'..'4' ~ '0'..'9' ~ '0'..'9' ) |
+                         ( "6"      ~ '0'..'4' ~ '0'..'9' ~ '0'..'9' ~ '0'..'9' ) |
+                         ( '1'..'5' ~ '0'..'9' ~ '0'..'9' ~ '0'..'9' ~ '0'..'9' ) |
+                         (            '1'..'9' ~ '0'..'9' ~ '0'..'9' ~ '0'..'9' ) |
+                         (                       '1'..'9' ~ '0'..'9' ~ '0'..'9' ) |
+                         (                                  '1'..'9' ~ '0'..'9' ) |
+                         (                                             '1'..'9' ) )
+              ) | "0"+ }
+word         =  { word_bin | word_hex | word_dec | raw_label }
 rest         =  { ( !eol ~ ANY )* }
 raw_label    =  { !(^"R"|^"PC"|^"SP") ~ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 raw_stacksize=  { "16" | "32" | "48" | "64" | ^"NOSET" }
