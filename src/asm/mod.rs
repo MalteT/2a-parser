@@ -15,7 +15,7 @@ pub enum Constant {
 
 /// A single word.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-// TODO: Specify behaviour in programs
+/// A single word, or two bytes. (Little-Endian)
 pub enum Word {
     Constant(u16),
     Label(Label),
