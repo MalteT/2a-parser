@@ -168,9 +168,9 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     let mut labels = vec![];
     for line in lines {
         match line {
-            Line::Label(label, _) => labels.push(label),
+            Line::Label(label, _) => labels.push(label.to_lowercase()),
             Line::Instruction(inst, _) => match inst {
-                Instruction::AsmEquals(label, _) => labels.push(label),
+                Instruction::AsmEquals(label, _) => labels.push(label.to_lowercase()),
                 _ => {}
             },
             _ => {}
@@ -244,7 +244,7 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
         // Check if labels exist and add missing ones to the list of undefined labels
         let mut refs = refs
             .drain(..)
-            .filter(|label| !labels.contains(&label))
+            .filter(|label| !labels.contains(&label.to_lowercase()))
             .collect();
         undefined_labels.append(&mut refs)
     }
