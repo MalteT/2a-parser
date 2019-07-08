@@ -90,8 +90,8 @@ pub enum MemAddress {
 pub enum Instruction {
     /// Set program origin.
     AsmOrigin(Constant),
-    /// Define byte.
-    AsmByte(Constant),
+    /// Leave space for n bytes.
+    AsmByte(u8),
     /// Define multiple bytes.
     AsmDefineBytes(Vec<Constant>),
     /// Define multiple words.

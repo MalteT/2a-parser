@@ -32,7 +32,7 @@ destination  =  { register | registerdi | registerddi | memory }
 
 // Assembler operations
 org       =  { ^".ORG"       ~ sep_ip ~ constant      }
-byte      =  { ^".BYTE"      ~ sep_ip ~ constant      }
+byte      =  { ^".BYTE"      ~ sep_ip ~ ( constant_bin | constant_hex | constant_dec )   }
 db        =  { ^".DB"        ~ sep_ip ~ constant      ~ ( sep_pp ~ constant )*           }
 dw        =  { ^".DW"        ~ sep_ip ~ constant      ~ ( sep_pp ~ constant )*           }
 equ       =  { ^".EQU"       ~ sep_ip ~ raw_label     ~   sep_pp ~ constant              }

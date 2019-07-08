@@ -270,7 +270,7 @@ mod test {
     #[test]
     fn test_display_instruction() {
         s!(Instruction::AsmOrigin(17.into()), ".ORG 0x11");
-        s!(Instruction::AsmByte(0x0A.into()), ".BYTE 0x0A");
+        s!(Instruction::AsmByte(0x0A.into()), ".BYTE 10");
         s!(
             Instruction::AsmDefineBytes(vec![0.into(), 255.into(), 33.into(), 1.into()]),
             ".DB 0x00, 0xFF, 0x21, 0x01"
