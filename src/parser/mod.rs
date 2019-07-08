@@ -162,7 +162,6 @@ fn parse_line(line: Pair<Rule>) -> Line {
 ///
 /// # Checks
 /// - Undefined Labels
-/// TODO: Match Labels case insensitive?
 fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
     // Collect labels
     let mut labels = vec![];
