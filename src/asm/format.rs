@@ -1,4 +1,3 @@
-use colored::Colorize;
 use pad::PadStr;
 
 use std::fmt;
@@ -178,14 +177,14 @@ impl fmt::Display for Line {
         match self {
             Line::Empty(Some(comment)) => {
                 let comment = format!("; {}", comment);
-                write!(f, "{}", comment.dimmed())
+                write!(f, "{}", comment)
             }
             Line::Empty(None) => write!(f, ""),
             Line::Label(label, comment) => {
-                let out = format!("{}:", label).pad_to_width(COMMENT_WIDTH).magenta();
+                let out = format!("{}:", label).pad_to_width(COMMENT_WIDTH);
                 write!(f, "{}", out)?;
                 if let Some(comment) = comment {
-                    let comment = format!("; {}", comment).dimmed();
+                    let comment = format!("; {}", comment);
                     write!(f, "{}", comment)?;
                 }
                 Ok(())
@@ -195,7 +194,7 @@ impl fmt::Display for Line {
                 let inst = format!("{}", inst).pad_to_width(COMMENT_WIDTH - INST_WIDTH);
                 write!(f, "{}{}", prefix, inst)?;
                 if let Some(comment) = comment {
-                    let comment = format!("; {}", comment).dimmed();
+                    let comment = format!("; {}", comment);
                     write!(f, "{}", comment)?;
                 }
                 Ok(())
@@ -208,7 +207,7 @@ impl fmt::Display for Asm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let header = "#! mrasm".pad_to_width(COMMENT_WIDTH);
         if let Some(comment) = &self.comment_after_shebang {
-            let line = format!("{}; {}", header, comment).dimmed();
+            let line = format!("{}; {}", header, comment);
             writeln!(f, "{}", line)?;
         } else {
             writeln!(f, "{}", header)?;
