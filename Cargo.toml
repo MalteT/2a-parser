@@ -5,11 +5,11 @@ authors = ["Malte Tammena <malte.tammena@gmx.de>"]
 edition = "2018"
 
 [lib]
-name = "2a-parser"
+name = "parser"
 path = "src/lib.rs"
 
 [[bin]]
-name = "2a-parser-bin"
+name = "2a-parser"
 path = "src/main.rs"
 #required-features = [ "clap" ]
 
