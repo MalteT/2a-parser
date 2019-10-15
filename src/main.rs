@@ -1,4 +1,4 @@
-use mr2a_asm_parser::parser::AsmParser;
+use parser::parser::AsmParser;
 
 use std::env::args;
 use std::fs::read_to_string;
