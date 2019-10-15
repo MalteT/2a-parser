@@ -1,16 +1,17 @@
 [package]
-name = "mr2a_asm_parser"
+name = "2a-parser"
 version = "4.3.0"
 authors = ["Malte Tammena <malte.tammena@gmx.de>"]
 edition = "2018"
 
 [lib]
-name = "mr2a_asm_parser"
+name = "2a-parser"
 path = "src/lib.rs"
 
 [[bin]]
-name = "asm_parser_bin"
+name = "2a-parser-bin"
 path = "src/main.rs"
+#required-features = [ "clap" ]
 
 [dependencies]
 pest = "2.1"
