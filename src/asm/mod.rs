@@ -89,7 +89,7 @@ pub enum MemAddress {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Instruction {
     /// Set program origin.
-    AsmOrigin(Constant),
+    AsmOrigin(u8),
     /// Leave space for n bytes.
     AsmByte(u8),
     /// Define multiple bytes.

@@ -211,7 +211,7 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
                 | Instruction::Jnc(label)
                 | Instruction::Jr(label)
                 | Instruction::Call(label) => vec![label.clone()],
-                Instruction::AsmOrigin(c) | Instruction::LdConstant(_, c) => const_to_vec(c),
+                Instruction::LdConstant(_, c) => const_to_vec(c),
                 Instruction::AsmDefineBytes(constants) => {
                     constants.iter().map(const_to_vec).flatten().collect()
                 }
@@ -335,11 +335,17 @@ fn parse_instruction(instruction: Pair<Rule>) -> Instruction {
 }
 /// Parse an `org` rule into an [`Instruction`].
 fn parse_instruction_org(org: Pair<Rule>) -> Instruction {
-    let (_, constant) = inner_tuple! { org;
-        sep_ip      => ignore;
-        constant    => parse_constant;
+    let (_, number) = inner_tuple! { org;
+        sep_ip => ignore;
+        constant_bin | constant_hex | constant_dec => id;
     };
-    Instruction::AsmOrigin(constant)
+    let number = match number.as_rule() {
+        Rule::constant_bin => u8::from_str_radix(&number.as_str()[2..], 2).unwrap(),
+        Rule::constant_hex => u8::from_str_radix(&number.as_str()[2..], 16).unwrap(),
+        Rule::constant_dec => u8::from_str_radix(&number.as_str(), 10).unwrap(),
+        _ => unreachable!(),
+    };
+    Instruction::AsmOrigin(number)
 }
 /// Parse a `constant` rule into a [`Constant`].
 fn parse_constant(constant: Pair<Rule>) -> Constant {
@@ -381,7 +387,8 @@ fn parse_word(constant: Pair<Rule>) -> Word {
 }
 /// Parse a `byte` rule into an [`Instruction`].
 fn parse_instruction_byte(byte: Pair<Rule>) -> Instruction {
-    let number = inner_tuple! { byte;
+    let (_, number) = inner_tuple! { byte;
+        sep_ip => ignore;
         constant_bin | constant_hex | constant_dec => id;
     };
     let number = match number.as_rule() {
