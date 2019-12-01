@@ -16,16 +16,6 @@ impl fmt::Display for Constant {
     }
 }
 
-impl fmt::Display for Word {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Word::Constant(nr) => write!(f, "0x{:>04X}", nr),
-            Word::Label(label) => write!(f, "{}", label),
-        }
-        .into()
-    }
-}
-
 impl fmt::Display for Stacksize {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -74,14 +64,6 @@ impl fmt::Display for Instruction {
                     write!(f, "{}, ", byte)?;
                 }
                 write!(f, "{}", last.expect("No bytes to define"))
-            }
-            Instruction::AsmDefineWords(words) => {
-                write!(f, ".DW ")?;
-                let last = words.last();
-                for word in &words[..words.len() - 1] {
-                    write!(f, "{}, ", word)?;
-                }
-                write!(f, "{}", last.expect("No words to define"))
             }
             Instruction::AsmEquals(label, byte) => write!(f, ".EQU {} {}", label, byte),
             Instruction::AsmStacksize(size) => write!(f, "*STACKSIZE {}", size),

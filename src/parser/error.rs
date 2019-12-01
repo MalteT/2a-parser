@@ -101,7 +101,6 @@ impl fmt::Display for Rule {
             org => ".ORG",
             byte => ".BYTE",
             db => ".DB",
-            dw => ".DW",
             equ => ".EQU",
             stacksize => "*STACKSIZE",
             clr => "CLR",

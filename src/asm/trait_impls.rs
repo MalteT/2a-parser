@@ -12,12 +12,6 @@ impl From<Label> for Constant {
     }
 }
 
-impl From<u16> for Word {
-    fn from(word: u16) -> Self {
-        Word::Constant(word)
-    }
-}
-
 impl From<Register> for Source {
     fn from(register: Register) -> Self {
         Source::Register(register)

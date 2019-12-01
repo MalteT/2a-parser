@@ -215,15 +215,6 @@ fn validate_lines(lines: &Vec<Line>) -> Result<(), ParserError> {
                 Instruction::AsmDefineBytes(constants) => {
                     constants.iter().map(const_to_vec).flatten().collect()
                 }
-                Instruction::AsmDefineWords(words) => words
-                    .iter()
-                    .cloned()
-                    .map(|w| match w {
-                        Word::Label(label) => vec![label],
-                        Word::Constant(_) => vec![],
-                    })
-                    .flatten()
-                    .collect(),
                 Instruction::LdMemAddress(_, mem) | Instruction::St(mem, _) => mem_to_vec(mem),
                 Instruction::Dec(src) | Instruction::Ldsp(src) | Instruction::Ldfr(src) => {
                     src_to_vec(src)
@@ -278,7 +269,6 @@ fn parse_instruction(instruction: Pair<Rule>) -> Instruction {
         Rule::org => parse_instruction_org(instruction),
         Rule::byte => parse_instruction_byte(instruction),
         Rule::db => parse_instruction_db(instruction),
-        Rule::dw => parse_instruction_dw(instruction),
         Rule::equ => parse_instruction_equ(instruction),
         Rule::stacksize => parse_instruction_stacksize(instruction),
         Rule::clr => parse_instruction_clr(instruction),
@@ -366,25 +356,6 @@ fn parse_constant(constant: Pair<Rule>) -> Constant {
         _ => unreachable!(),
     }
 }
-/// Parse a `constant` rule into a [`Word`].
-fn parse_word(constant: Pair<Rule>) -> Word {
-    let inner = inner_tuple! { constant;
-        word_bin | word_hex | word_dec | raw_label => id;
-    };
-    match inner.as_rule() {
-        Rule::word_bin => u16::from_str_radix(&inner.as_str()[1..], 2)
-            .map(|nr| Word::Constant(nr))
-            .unwrap(),
-        Rule::word_hex => u16::from_str_radix(&inner.as_str()[1..], 16)
-            .map(|nr| Word::Constant(nr))
-            .unwrap(),
-        Rule::word_dec => u16::from_str_radix(&inner.as_str(), 10)
-            .map(|nr| Word::Constant(nr))
-            .unwrap(),
-        Rule::raw_label => Word::Label(parse_raw_label(inner)),
-        _ => unreachable!(),
-    }
-}
 /// Parse a `byte` rule into an [`Instruction`].
 fn parse_instruction_byte(byte: Pair<Rule>) -> Instruction {
     let (_, number) = inner_tuple! { byte;
@@ -407,15 +378,6 @@ fn parse_instruction_db(db: Pair<Rule>) -> Instruction {
         .map(|constant| parse_constant(constant));
     let constants = results.collect();
     Instruction::AsmDefineBytes(constants)
-}
-/// Parse a `dw` rule into an [`Instruction`].
-fn parse_instruction_dw(dw: Pair<Rule>) -> Instruction {
-    let results = dw
-        .into_inner()
-        .filter(|pair| pair.as_rule() == Rule::word)
-        .map(|word| parse_word(word));
-    let words = results.collect();
-    Instruction::AsmDefineWords(words)
 }
 /// Parse an `equ` rule into an [`Instruction`].
 fn parse_instruction_equ(equ: Pair<Rule>) -> Instruction {

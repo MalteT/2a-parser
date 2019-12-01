@@ -374,14 +374,6 @@ fn test_db() {
 }
 
 #[test]
-fn test_dw() {
-    use Rule::dw;
-    parse!(dw, ".DW 20, 0xff, 0b11110");
-    parse!(dw, ".dw 100,\t0xf,\t \t\t0b1");
-    parse!(dw, ".dW 100,0xf ,0b1", ".dW 100,0xf");
-}
-
-#[test]
 fn test_equ() {
     use Rule::equ;
     parse!(equ, ".EQU label, 0xf");

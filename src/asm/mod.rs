@@ -13,14 +13,6 @@ pub enum Constant {
     Label(Label),
 }
 
-/// A single word.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-/// A single word, or two bytes. (Little-Endian)
-pub enum Word {
-    Constant(u16),
-    Label(Label),
-}
-
 /// A general source.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Source {
@@ -94,8 +86,6 @@ pub enum Instruction {
     AsmByte(u8),
     /// Define multiple bytes.
     AsmDefineBytes(Vec<Constant>),
-    /// Define multiple words.
-    AsmDefineWords(Vec<Word>),
     /// Make label equivalent to constant.
     AsmEquals(Label, Constant),
     /// Define stacksize.
