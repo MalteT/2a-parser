@@ -6,8 +6,6 @@ Supports optional formatting using the `formatting` flag.
 ## Example
 
 ```rust
-use mr2a_asm_parser::parser::AsmParser;
-
 fn main() {
     let asm = r##"#! mrasm
 
