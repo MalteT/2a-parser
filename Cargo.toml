@@ -1,5 +1,5 @@
 [package]
-name = "2a-parser"
+name = "parser-2a"
 version = "6.0.0"
 authors = ["Malte Tammena <malte.tammena@gmx.de>"]
 edition = "2018"
