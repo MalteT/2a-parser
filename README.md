@@ -1,3 +1,5 @@
+# Deprecated, use [this](https://github.com/MalteT/2a-emulator)!
+
 # Minirechner2a ASM parser
 
 Crate to parse assembly programs into a usable structure.
